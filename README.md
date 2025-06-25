@@ -22,14 +22,16 @@ A **comprehensive Singapore Location Intelligence Platform** built as a Model Co
 **Before**: Basic transport tools with failed postal code resolution
 **After**: Enterprise-grade location intelligence platform
 
+![Singapore Transport MCP Demo](./assets/singapore-transport-mcp-demo.gif)
+
 ```
-INPUT: "How to get to 828770 from Little India MRT?"
+INPUT: "How to get to Suntec City from Little India MRT?"
 
 OUTPUT: 
-✅ Postal Code 828770 → TWIN WATERFALLS, 120 PUNGGOL WALK
-🚇 Route: NE Line (22 min) → Walk (17 min) 
-💰 Cost: $2.06 | 🕐 Duration: 58 minutes
-📍 Step-by-step: "Walk 1143m to PUNGGOL MRT → Take NE Line..."
+✅ Postal Code 039594 → SUNTEC CITY
+🚇 Route: DT Line (8 min) → Walk (6 min) 
+💰 Cost: $1.55 | 🕐 Duration: 29 minutes
+📍 Step-by-step: "Walk 246m to ROCHOR MRT → Take DT Line from Rochor to Promenade → Walk 450m to destination"
 ```
 
 ## 🚀 Quick Start
@@ -134,13 +136,13 @@ Add to your `claude_desktop_config.json`:
 ### Postal Code Intelligence
 ```javascript
 {
-  "postalCode": "828770",
+  "postalCode": "039594",
   "location": {
-    "name": "TWIN WATERFALLS",
-    "address": "120 PUNGGOL WALK TWIN WATERFALLS SINGAPORE 828770",
-    "district": "Punggol",
-    "areaType": "East Singapore",
-    "confidence": 0.95
+    "name": "SUNTEC CITY",
+    "address": "3 TEMASEK BOULEVARD SUNTEC CITY SINGAPORE 039594",
+    "district": "Downtown Core",
+    "areaType": "Central Singapore",
+    "confidence": 0.98
   }
 }
 ```
