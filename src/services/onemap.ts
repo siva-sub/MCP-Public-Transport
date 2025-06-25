@@ -95,7 +95,6 @@ export class OneMapService {
       timeout: this.timeout,
       headers: {
         'Content-Type': 'application/json',
-        ...(this.token && { 'Authorization': this.token }),
       },
     });
 
@@ -228,6 +227,12 @@ export class OneMapService {
     }
   ): Promise<JourneyPlan | null> {
     try {
+      // Check if token is available for routing
+      if (!this.token) {
+        logger.warn('OneMap token not available - routing requires authentication');
+        return null;
+      }
+
       const now = new Date();
       const routeType = this.mapModeToRouteType(options.mode || 'PUBLIC_TRANSPORT');
       
@@ -238,18 +243,18 @@ export class OneMapService {
         numItineraries: options.numItineraries,
       };
 
-      // Set time parameters
+      // Set time parameters in the correct format
       if (options.departureTime) {
-        params.date = this.formatDate(options.departureTime);
-        params.time = this.formatTime(options.departureTime);
+        params.date = this.formatDateForOneMap(options.departureTime);
+        params.time = this.formatTimeForOneMap(options.departureTime);
         params.arriveBy = 'false';
       } else if (options.arrivalTime) {
-        params.date = this.formatDate(options.arrivalTime);
-        params.time = this.formatTime(options.arrivalTime);
+        params.date = this.formatDateForOneMap(options.arrivalTime);
+        params.time = this.formatTimeForOneMap(options.arrivalTime);
         params.arriveBy = 'true';
       } else {
-        params.date = this.formatDate(now);
-        params.time = this.formatTime(now);
+        params.date = this.formatDateForOneMap(now);
+        params.time = this.formatTimeForOneMap(now);
         params.arriveBy = 'false';
       }
 
@@ -260,7 +265,13 @@ export class OneMapService {
         params.showIntermediateStops = 'true';
       }
 
-      const response = await this.client.get<OneMapRouteResponse>('/public/routingsvc/route', { params });
+      // Make request with authorization header
+      const response = await this.client.get<OneMapRouteResponse>('/public/routingsvc/route', { 
+        params,
+        headers: {
+          'Authorization': this.token
+        }
+      });
       
       if (!response.data.plan?.itineraries?.length) {
         logger.warn('No route found', { from, to, params });
@@ -302,6 +313,22 @@ export class OneMapService {
       minute: '2-digit',
       second: '2-digit',
     });
+  }
+
+  private formatDateForOneMap(date: Date): string {
+    // OneMap expects MM-DD-YYYY format
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${month}-${day}-${year}`;
+  }
+
+  private formatTimeForOneMap(date: Date): string {
+    // OneMap expects HH:MM:SS format
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`;
   }
 
   private formatRouteResponse(data: OneMapRouteResponse): JourneyPlan {
