@@ -32,9 +32,9 @@ export function loadEnvironment(): Config {
     });
 
     return config;
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
-      const missingFields = error.errors.map(e => e.path.join('.')).join(', ');
+      const missingFields = error.errors.map((e: any) => e.path.join('.')).join(', ');
       throw new Error(`Environment configuration error: ${missingFields}`);
     }
     throw error;
