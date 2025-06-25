@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { TrainServiceAlert } from '../../types/transport';
-import { BaseTool, ToolDefinition } from '../base';
-import { LTAService } from '../../services/lta';
-import { validateInput } from '../../utils/validation';
-import { logger } from '../../utils/logger';
+import { TrainServiceAlert } from '../../types/transport.js';
+import { BaseTool, ToolDefinition } from '../base.js';
+import { LTAService } from '../../services/lta.js';
+import { validateInput } from '../../utils/validation.js';
+import { logger } from '../../utils/logger.js';
 
 const TrainStatusInputSchema = z.object({
   line: z.enum(['EWL', 'NSL', 'CCL', 'DTL', 'NEL', 'BPL', 'SLRT', 'PLRT', 'TEL']).optional(),

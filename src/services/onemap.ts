@@ -1,8 +1,8 @@
 import axios, { AxiosInstance } from 'axios';
-import { CacheService } from './cache';
-import { APIError } from '../utils/errors';
-import { logger } from '../utils/logger';
-import { Location, JourneyPlan, RouteSegment } from '../types/transport';
+import { CacheService } from './cache.js';
+import { APIError } from '../utils/errors.js';
+import { logger } from '../utils/logger.js';
+import { Location, JourneyPlan, RouteSegment } from '../types/transport.js';
 
 interface OneMapSearchResult {
   SEARCHVAL: string;

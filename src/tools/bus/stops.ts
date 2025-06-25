@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { BaseTool, ToolDefinition } from '../base';
-import { LTAService } from '../../services/lta';
-import { OneMapService } from '../../services/onemap';
-import { validateInput, LocationSchema } from '../../utils/validation';
-import { logger } from '../../utils/logger';
+import { BaseTool, ToolDefinition } from '../base.js';
+import { LTAService } from '../../services/lta.js';
+import { OneMapService } from '../../services/onemap.js';
+import { validateInput, LocationSchema } from '../../utils/validation.js';
+import { logger } from '../../utils/logger.js';
 import haversineDistance from 'haversine-distance';
 
 const BusStopsInputSchema = z.intersection(LocationSchema, z.object({

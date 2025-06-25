@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ValidationError } from './errors';
+import { ValidationError } from './errors.js';
 
 export const BusStopCodeSchema = z.string()
   .regex(/^\d{5}$/, 'Bus stop code must be 5 digits')

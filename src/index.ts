@@ -2,9 +2,9 @@
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { SingaporeTransportServer } from './server';
-import { loadEnvironment } from './config/environment';
-import { logger } from './utils/logger';
+import { SingaporeTransportServer } from './server.js';
+import { loadEnvironment } from './config/environment.js';
+import { logger } from './utils/logger.js';
 
 const PACKAGE_VERSION = '1.0.0';
 

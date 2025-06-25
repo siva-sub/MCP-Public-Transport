@@ -1,10 +1,10 @@
 import { z } from 'zod';
-import { JourneyPlan, Location } from '../../types/transport';
-import { BaseTool, ToolDefinition } from '../base';
-import { OneMapService } from '../../services/onemap';
-import { LTAService } from '../../services/lta';
-import { validateInput } from '../../utils/validation';
-import { logger } from '../../utils/logger';
+import { JourneyPlan, Location } from '../../types/transport.js';
+import { BaseTool, ToolDefinition } from '../base.js';
+import { OneMapService } from '../../services/onemap.js';
+import { LTAService } from '../../services/lta.js';
+import { validateInput } from '../../utils/validation.js';
+import { logger } from '../../utils/logger.js';
 
 const JourneyPlanningInputSchema = z.object({
   fromLocation: z.string().min(1, 'From location is required'),

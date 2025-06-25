@@ -1,19 +1,19 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
-import { LTAService } from './services/lta';
-import { OneMapService } from './services/onemap';
-import { CacheService } from './services/cache';
-import { Config } from './config/environment';
-import { logger } from './utils/logger';
-import { TransportError } from './utils/errors';
+import { LTAService } from './services/lta.js';
+import { OneMapService } from './services/onemap.js';
+import { CacheService } from './services/cache.js';
+import { Config } from './config/environment.js';
+import { logger } from './utils/logger.js';
+import { TransportError } from './utils/errors.js';
 
 // Import all tools
-import { BusArrivalTool } from './tools/bus/arrival';
-import { BusStopsTool } from './tools/bus/stops';
-import { TrainStatusTool } from './tools/train/status';
-import { JourneyPlanningTool } from './tools/routing/journey';
-import { TaxiAvailabilityTool } from './tools/taxi/availability';
+import { BusArrivalTool } from './tools/bus/arrival.js';
+import { BusStopsTool } from './tools/bus/stops.js';
+import { TrainStatusTool } from './tools/train/status.js';
+import { JourneyPlanningTool } from './tools/routing/journey.js';
+import { TaxiAvailabilityTool } from './tools/taxi/availability.js';
 
 export class SingaporeTransportServer {
   private ltaService: LTAService;

@@ -1,19 +1,19 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
-import { CacheService } from './cache';
-import { APIError, RateLimitError } from '../utils/errors';
-import { logger } from '../utils/logger';
+import { CacheService } from './cache.js';
+import { APIError, RateLimitError } from '../utils/errors.js';
+import { logger } from '../utils/logger.js';
 import { 
   BusStop, 
   BusService, 
   TrainServiceAlert,
   TaxiAvailability,
   TrafficIncident
-} from '../types/transport';
+} from '../types/transport.js';
 import {
   LTABusArrivalResponse,
   LTABusStopsResponse,
   LTATrainServiceAlertsResponse
-} from '../types/api';
+} from '../types/api.js';
 
 export class LTAService {
   private client: AxiosInstance;

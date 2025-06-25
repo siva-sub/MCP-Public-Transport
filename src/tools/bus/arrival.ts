@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { BaseTool, ToolDefinition } from '../base';
-import { LTAService } from '../../services/lta';
-import { validateInput, BusStopCodeSchema } from '../../utils/validation';
-import { logger } from '../../utils/logger';
+import { BaseTool, ToolDefinition } from '../base.js';
+import { LTAService } from '../../services/lta.js';
+import { validateInput, BusStopCodeSchema } from '../../utils/validation.js';
+import { logger } from '../../utils/logger.js';
 
 const BusArrivalInputSchema = z.object({
   busStopCode: BusStopCodeSchema,
