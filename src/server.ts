@@ -14,6 +14,11 @@ import { BusStopsTool } from './tools/bus/stops.js';
 import { TrainStatusTool } from './tools/train/status.js';
 import { JourneyPlanningTool } from './tools/routing/journey.js';
 import { TaxiAvailabilityTool } from './tools/taxi/availability.js';
+import { LocationSearchTool } from './tools/location/search.js';
+
+// Import enhanced services
+import { PostalCodeService } from './services/postalCode.js';
+import { SingaporeTimeService } from './services/time.js';
 
 export class SingaporeTransportServer {
   private ltaService: LTAService;
@@ -30,12 +35,18 @@ export class SingaporeTransportServer {
     );
     this.oneMapService = new OneMapService(
       config.oneMapToken,
+      config.oneMapEmail,
+      config.oneMapPassword,
       this.cacheService,
       config.requestTimeout
     );
   }
 
   async setupTools(server: Server): Promise<void> {
+    // Initialize enhanced services
+    const postalCodeService = new PostalCodeService(this.oneMapService, this.cacheService);
+    const timeService = new SingaporeTimeService();
+
     // Initialize all tools
     this.tools = [
       new BusArrivalTool(this.ltaService),
@@ -43,6 +54,7 @@ export class SingaporeTransportServer {
       new TrainStatusTool(this.ltaService),
       new JourneyPlanningTool(this.oneMapService, this.ltaService),
       new TaxiAvailabilityTool(this.ltaService, this.oneMapService),
+      new LocationSearchTool(this.oneMapService, postalCodeService, timeService),
     ];
 
     // Get all tool definitions

@@ -3,22 +3,10 @@ import { CacheService } from './cache.js';
 import { APIError } from '../utils/errors.js';
 import { logger } from '../utils/logger.js';
 import { Location, JourneyPlan, RouteSegment } from '../types/transport.js';
-
-interface OneMapSearchResult {
-  SEARCHVAL: string;
-  BLK_NO: string;
-  ROAD_NAME: string;
-  BUILDING: string;
-  ADDRESS: string;
-  POSTAL: string;
-  X: string;
-  Y: string;
-  LATITUDE: string;
-  LONGITUDE: string;
-}
+import { OneMapSearchResult } from '../types/location.js';
 
 interface OneMapRouteResponse {
-  plan: {
+  plan?: {
     date: number;
     from: {
       name: string;
@@ -79,16 +67,44 @@ interface OneMapRouteResponse {
       }>;
     }>;
   };
+  // Direct routing response (drive/walk/cycle)
+  status_message?: string;
+  route_geometry?: string;
+  status?: number;
+  route_instructions?: Array<[
+    string, // direction (e.g., "Left", "Right", "Straight")
+    string, // street name
+    number, // distance in meters
+    string, // coordinates
+    number, // time in seconds
+    string, // distance formatted (e.g., "145m")
+    string, // compass direction from
+    string, // compass direction to
+    string, // mode (driving/walking)
+    string  // instruction text
+  ]>;
+  route_name?: string[];
+  route_summary?: {
+    start_point: string;
+    end_point: string;
+    total_time: number;
+    total_distance: number;
+  };
+  viaRoute?: string;
+  subtitle?: string;
 }
 
 export class OneMapService {
-  private client: AxiosInstance;
+  public client: AxiosInstance;
   private readonly baseUrl = 'https://www.onemap.gov.sg/api';
+  private tokenCache: { token: string; expiry: number } | null = null;
 
   constructor(
-    private token?: string,
+    private staticToken?: string,
+    private email?: string,
+    private password?: string,
     private cache?: CacheService,
-    private timeout: number = 30000
+    private timeout: number = 5000
   ) {
     this.client = axios.create({
       baseURL: this.baseUrl,
@@ -134,6 +150,75 @@ export class OneMapService {
         );
       }
     );
+  }
+
+  async ensureValidToken(): Promise<string> {
+    // Use static token if provided
+    if (this.staticToken) return this.staticToken;
+
+    // Check cached token
+    if (this.tokenCache && this.tokenCache.expiry > Date.now()) {
+      return this.tokenCache.token;
+    }
+
+    // Refresh token
+    if (!this.email || !this.password) {
+      throw new APIError('OneMap credentials not configured', 'AUTH_MISSING', 401);
+    }
+
+    return this.refreshToken();
+  }
+
+  private async refreshToken(): Promise<string> {
+    try {
+      logger.info('Refreshing OneMap authentication token');
+      
+      const response = await this.client.post('/auth/post/getToken', {
+        email: this.email,
+        password: this.password,
+      });
+
+      const { access_token, expiry_timestamp } = response.data;
+      
+      this.tokenCache = {
+        token: access_token,
+        expiry: parseInt(expiry_timestamp) * 1000, // Convert to milliseconds
+      };
+
+      logger.info('OneMap token refreshed successfully');
+      return access_token;
+    } catch (error) {
+      logger.error('Failed to refresh OneMap token', error);
+      throw new APIError('OneMap authentication failed', 'AUTH_FAILED', 401);
+    }
+  }
+
+  // Enhanced geocoding with authentication
+  async geocodeWithAuth(query: string): Promise<OneMapSearchResult[]> {
+    try {
+      const response = await this.client.get('/common/elastic/search', {
+        params: {
+          searchVal: query,
+          returnGeom: 'Y',
+          getAddrDetails: 'Y',
+        },
+        headers: this.staticToken ? {
+          'Authorization': this.staticToken,
+        } : undefined,
+      });
+
+      const data = response.data;
+      
+      if (data.found === 0 || !data.results || data.results.length === 0) {
+        logger.debug(`No geocoding results found for: ${query}`);
+        return [];
+      }
+
+      return data.results;
+    } catch (error) {
+      logger.error(`Geocoding with auth failed for: ${query}`, error);
+      throw error;
+    }
   }
 
   async geocode(query: string): Promise<Location | null> {
@@ -227,11 +312,8 @@ export class OneMapService {
     }
   ): Promise<JourneyPlan | null> {
     try {
-      // Check if token is available for routing
-      if (!this.token) {
-        logger.warn('OneMap token not available - routing requires authentication');
-        return null;
-      }
+      // Get authentication token for routing
+      const token = await this.ensureValidToken();
 
       const now = new Date();
       const routeType = this.mapModeToRouteType(options.mode || 'PUBLIC_TRANSPORT');
@@ -269,11 +351,12 @@ export class OneMapService {
       const response = await this.client.get<OneMapRouteResponse>('/public/routingsvc/route', { 
         params,
         headers: {
-          'Authorization': this.token
+          'Authorization': token
         }
       });
       
-      if (!response.data.plan?.itineraries?.length) {
+      // Check if we have a valid response
+      if (!response.data.plan?.itineraries?.length && !response.data.route_instructions) {
         logger.warn('No route found', { from, to, params });
         return null;
       }
@@ -332,7 +415,21 @@ export class OneMapService {
   }
 
   private formatRouteResponse(data: OneMapRouteResponse): JourneyPlan {
-    const itinerary = data.plan.itineraries[0]; // Use first/best itinerary
+    // Handle public transport response (with plan.itineraries)
+    if (data.plan?.itineraries?.length) {
+      return this.formatPublicTransportResponse(data);
+    }
+    
+    // Handle direct routing response (walk/drive/cycle with route_instructions)
+    if (data.route_instructions?.length) {
+      return this.formatDirectRoutingResponse(data);
+    }
+    
+    throw new APIError('Invalid route response format', 'INVALID_ROUTE_RESPONSE', 422);
+  }
+
+  private formatPublicTransportResponse(data: OneMapRouteResponse): JourneyPlan {
+    const itinerary = data.plan!.itineraries[0]; // Use first/best itinerary
     
     const segments: RouteSegment[] = itinerary.legs.map((leg): RouteSegment => {
       const instructions: string[] = [];
@@ -385,6 +482,76 @@ export class OneMapService {
     };
   }
 
+  private formatDirectRoutingResponse(data: OneMapRouteResponse): JourneyPlan {
+    const instructions: string[] = [];
+    
+    // Process detailed turn-by-turn instructions
+    if (data.route_instructions) {
+      for (const instruction of data.route_instructions) {
+        const [direction, streetName, distance, coordinates, timeSeconds, distanceFormatted, fromDirection, toDirection, mode, instructionText] = instruction;
+        
+        // Create detailed instruction text like "Turn Left To Stay On Thomson Road"
+        instructions.push(instructionText);
+      }
+    }
+
+    const mode = this.determineDirectRouteMode(data.route_instructions?.[0]?.[8] || 'walking');
+    const totalTime = data.route_summary?.total_time || 0;
+    const totalDistance = data.route_summary?.total_distance || 0;
+
+    const segments: RouteSegment[] = [{
+      mode,
+      duration: totalTime,
+      distance: totalDistance,
+      instructions,
+      startLocation: {
+        latitude: 0, // Coordinates would need to be parsed from route_instructions
+        longitude: 0,
+        name: data.route_summary?.start_point || 'Origin',
+      },
+      endLocation: {
+        latitude: 0, // Coordinates would need to be parsed from route_instructions  
+        longitude: 0,
+        name: data.route_summary?.end_point || 'Destination',
+      },
+    }];
+
+    return {
+      segments,
+      totalDuration: totalTime,
+      totalDistance: totalDistance,
+      totalCost: 0, // No cost for walking/driving
+      totalWalkDistance: mode === 'WALK' ? totalDistance : 0,
+      transfers: 0,
+      summary: this.createDirectRouteSummary(mode, totalTime, totalDistance),
+    };
+  }
+
+  private determineDirectRouteMode(apiMode: string): 'WALK' | 'BUS' | 'TRAIN' | 'TAXI' {
+    switch (apiMode?.toLowerCase()) {
+      case 'walking':
+        return 'WALK';
+      case 'driving':
+        return 'TAXI'; // Use TAXI for driving mode
+      case 'cycling':
+        return 'WALK'; // Use WALK for cycling (closest equivalent)
+      default:
+        return 'WALK';
+    }
+  }
+
+  private createDirectRouteSummary(mode: 'WALK' | 'BUS' | 'TRAIN' | 'TAXI', timeSeconds: number, distanceMeters: number): string {
+    const minutes = Math.round(timeSeconds / 60);
+    const modeText = mode === 'TAXI' ? 'driving' : mode.toLowerCase();
+    
+    if (distanceMeters < 1000) {
+      return `${minutes} min ${modeText} (${distanceMeters}m)`;
+    } else {
+      const km = (distanceMeters / 1000).toFixed(1);
+      return `${minutes} min ${modeText} (${km}km)`;
+    }
+  }
+
   private mapApiModeToMode(apiMode: string): 'WALK' | 'BUS' | 'TRAIN' | 'TAXI' {
     switch (apiMode.toUpperCase()) {
       case 'WALK':
@@ -399,7 +566,7 @@ export class OneMapService {
     }
   }
 
-  private createJourneySummary(segments: RouteSegment[], itinerary: OneMapRouteResponse['plan']['itineraries'][0]): string {
+  private createJourneySummary(segments: RouteSegment[], itinerary: any): string {
     const duration = Math.round(itinerary.duration / 60);
     const cost = parseFloat(itinerary.fare) || 0;
     const transfers = itinerary.transfers;
