@@ -41,12 +41,8 @@ class Logger {
 
     const formatted = this.formatMessage(level, message, meta);
     
-    // Use console.error for error and warn, console.log for others
-    if (level === 'error' || level === 'warn') {
-      console.error(formatted);
-    } else {
-      console.log(formatted);
-    }
+    // Always use stderr to avoid interfering with MCP JSON-RPC on stdout
+    process.stderr.write(formatted + '\n');
   }
 
   debug(message: string, meta?: any): void {
