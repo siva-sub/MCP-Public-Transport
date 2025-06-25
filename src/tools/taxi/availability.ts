@@ -4,7 +4,7 @@ import { LTAService } from '../../services/lta.js';
 import { OneMapService } from '../../services/onemap.js';
 import { validateInput, LocationSchema } from '../../utils/validation.js';
 import { logger } from '../../utils/logger.js';
-import haversineDistance from 'haversine-distance';
+const haversineDistance = require('haversine-distance');
 
 const TaxiAvailabilityInputSchema = z.intersection(LocationSchema, z.object({
   radius: z.number().min(100).max(5000).default(1000),

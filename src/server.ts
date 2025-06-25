@@ -1,27 +1,27 @@
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+const { Server } = require('@modelcontextprotocol/sdk/server/index');
+const { CallToolRequestSchema, ListToolsRequestSchema } = require('@modelcontextprotocol/sdk/types');
 
-import { LTAService } from './services/lta.js';
-import { OneMapService } from './services/onemap.js';
-import { CacheService } from './services/cache.js';
-import { Config } from './config/environment.js';
-import { logger } from './utils/logger.js';
-import { TransportError } from './utils/errors.js';
+const { LTAService } = require('./services/lta');
+const { OneMapService } = require('./services/onemap');
+const { CacheService } = require('./services/cache');
+const { Config } = require('./config/environment');
+const { logger } = require('./utils/logger');
+const { TransportError } = require('./utils/errors');
 
 // Import all tools
-import { BusArrivalTool } from './tools/bus/arrival.js';
-import { BusStopsTool } from './tools/bus/stops.js';
-import { TrainStatusTool } from './tools/train/status.js';
-import { JourneyPlanningTool } from './tools/routing/journey.js';
-import { TaxiAvailabilityTool } from './tools/taxi/availability.js';
+const { BusArrivalTool } = require('./tools/bus/arrival');
+const { BusStopsTool } = require('./tools/bus/stops');
+const { TrainStatusTool } = require('./tools/train/status');
+const { JourneyPlanningTool } = require('./tools/routing/journey');
+const { TaxiAvailabilityTool } = require('./tools/taxi/availability');
 
-export class SingaporeTransportServer {
-  private ltaService: LTAService;
-  private oneMapService: OneMapService;
-  private cacheService: CacheService;
+class SingaporeTransportServer {
+  private ltaService: any;
+  private oneMapService: any;
+  private cacheService: any;
   private tools: any[] = [];
 
-  constructor(private config: Config) {
+  constructor(private config: any) {
     this.cacheService = new CacheService(config.cacheDuration);
     this.ltaService = new LTAService(
       config.ltaAccountKey,
@@ -35,7 +35,7 @@ export class SingaporeTransportServer {
     );
   }
 
-  async setupTools(server: Server): Promise<void> {
+  async setupTools(server: any): Promise<void> {
     // Initialize all tools
     this.tools = [
       new BusArrivalTool(this.ltaService),
@@ -57,7 +57,7 @@ export class SingaporeTransportServer {
     });
 
     // Set up tool call handler
-    server.setRequestHandler(CallToolRequestSchema, async (request) => {
+    server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
       const { name, arguments: args } = request.params;
       
       try {
@@ -154,3 +154,5 @@ export class SingaporeTransportServer {
     };
   }
 }
+
+module.exports = { SingaporeTransportServer };

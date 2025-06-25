@@ -1,5 +1,5 @@
-import NodeCache from 'node-cache';
-import { logger } from '../utils/logger.js';
+import NodeCache = require('node-cache');
+import { logger } from '../utils/logger';
 
 export class CacheService {
   private cache: NodeCache;
@@ -14,11 +14,11 @@ export class CacheService {
       deleteOnExpire: true,
     });
 
-    this.cache.on('expired', (key) => {
+    this.cache.on('expired', (key: string) => {
       logger.debug(`Cache key expired: ${key}`);
     });
 
-    this.cache.on('del', (key) => {
+    this.cache.on('del', (key: string) => {
       logger.debug(`Cache key deleted: ${key}`);
     });
   }
