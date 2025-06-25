@@ -34,13 +34,36 @@ npx @siva-sub/mcp-public-transport
 ```
 
 ### Claude Desktop Setup
-Add to your `claude_desktop_config.json`:
+
+There are two ways to set up the server with Claude Desktop:
+
+**1. From NPM (after publishing):**
+
+Add the following to your `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
     "singapore-transport": {
       "command": "npx",
       "args": ["-y", "@siva-sub/mcp-public-transport"],
+      "env": {
+        "LTA_ACCOUNT_KEY": "your_lta_api_key_here",
+        "ONEMAP_TOKEN": "your_onemap_token_here"
+      }
+    }
+  }
+}
+```
+
+**2. Directly from GitHub (for development):**
+
+Add the following to your `claude_desktop_config.json`:
+```json
+{
+  "mcpServers": {
+    "singapore-transport": {
+      "command": "npx",
+      "args": ["-y", "github:siva-sub/MCP-Public-Transport"],
       "env": {
         "LTA_ACCOUNT_KEY": "your_lta_api_key_here",
         "ONEMAP_TOKEN": "your_onemap_token_here"
