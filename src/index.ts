@@ -131,7 +131,9 @@ For more information: https://github.com/siva-sub/MCP-Public-Transport
 }
 
 // Main execution
-if (require.main === module) {
+import { fileURLToPath } from 'url';
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   handleCliArgs();
   setupGracefulShutdown();
   main().catch((error) => {
