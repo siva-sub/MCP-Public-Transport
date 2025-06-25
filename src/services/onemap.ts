@@ -219,11 +219,17 @@ export class OneMapService {
   private async _planRoute(
     from: Location,
     to: Location,
-    options: any
+    options: {
+      mode?: 'PUBLIC_TRANSPORT' | 'WALK' | 'DRIVE';
+      departureTime?: Date;
+      arrivalTime?: Date;
+      maxWalkDistance?: number;
+      numItineraries?: number;
+    }
   ): Promise<JourneyPlan | null> {
     try {
       const now = new Date();
-      const routeType = this.mapModeToRouteType(options.mode);
+      const routeType = this.mapModeToRouteType(options.mode || 'PUBLIC_TRANSPORT');
       
       const params: any = {
         start: `${from.latitude},${from.longitude}`,
@@ -366,7 +372,7 @@ export class OneMapService {
     }
   }
 
-  private createJourneySummary(segments: RouteSegment[], itinerary: any): string {
+  private createJourneySummary(segments: RouteSegment[], itinerary: OneMapRouteResponse['plan']['itineraries'][0]): string {
     const duration = Math.round(itinerary.duration / 60);
     const cost = parseFloat(itinerary.fare) || 0;
     const transfers = itinerary.transfers;

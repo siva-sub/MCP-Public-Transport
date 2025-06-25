@@ -4,7 +4,7 @@ interface LogEntry {
   timestamp: string;
   level: LogLevel;
   message: string;
-  meta?: any;
+  meta?: unknown;
 }
 
 class Logger {
@@ -25,7 +25,7 @@ class Logger {
     return levels[level] >= levels[this.logLevel];
   }
 
-  private formatMessage(level: LogLevel, message: string, meta?: any): string {
+  private formatMessage(level: LogLevel, message: string, meta?: unknown): string {
     const entry: LogEntry = {
       timestamp: new Date().toISOString(),
       level,
@@ -36,32 +36,34 @@ class Logger {
     return JSON.stringify(entry);
   }
 
-  private log(level: LogLevel, message: string, meta?: any): void {
+  private log(level: LogLevel, message: string, meta?: unknown): void {
     if (!this.shouldLog(level)) return;
 
     const formatted = this.formatMessage(level, message, meta);
     
     // Use console.error for error and warn, console.log for others
     if (level === 'error' || level === 'warn') {
+      // eslint-disable-next-line no-console
       console.error(formatted);
     } else {
+      // eslint-disable-next-line no-console
       console.log(formatted);
     }
   }
 
-  debug(message: string, meta?: any): void {
+  debug(message: string, meta?: unknown): void {
     this.log('debug', message, meta);
   }
 
-  info(message: string, meta?: any): void {
+  info(message: string, meta?: unknown): void {
     this.log('info', message, meta);
   }
 
-  warn(message: string, meta?: any): void {
+  warn(message: string, meta?: unknown): void {
     this.log('warn', message, meta);
   }
 
-  error(message: string, error?: any): void {
+  error(message: string, error?: unknown): void {
     const meta = error instanceof Error 
       ? { 
           message: error.message, 

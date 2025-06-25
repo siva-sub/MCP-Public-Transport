@@ -95,7 +95,7 @@ export class LTAService {
     const cacheKey = `bus_arrival_${busStopCode}_${serviceNo || 'all'}`;
     
     return this.cache.getOrSet(cacheKey, async () => {
-      const params: any = { BusStopCode: busStopCode };
+      const params: { BusStopCode: string; ServiceNo?: string } = { BusStopCode: busStopCode };
       if (serviceNo) {
         params.ServiceNo = serviceNo;
       }
@@ -130,13 +130,14 @@ export class LTAService {
       const allStops: BusStop[] = [];
       let skip = 0;
       const limit = 500;
+      let hasMore = true;
       
-      while (true) {
+      while (hasMore) {
         const stops = await this.getBusStops(skip, limit);
         allStops.push(...stops);
         
         if (stops.length < limit) {
-          break;
+          hasMore = false;
         }
         
         skip += limit;
@@ -160,9 +161,9 @@ export class LTAService {
     const cacheKey = 'taxi_availability';
     
     return this.cache.getOrSet(cacheKey, async () => {
-      const response = await this.client.get('/Taxi-Availability');
+      const response = await this.client.get<{ value: { Latitude: number; Longitude: number; Timestamp: string }[] }>('/Taxi-Availability');
       
-      return response.data.value.map((taxi: any): TaxiAvailability => ({
+      return response.data.value.map((taxi): TaxiAvailability => ({
         coordinates: [taxi.Latitude, taxi.Longitude],
         timestamp: taxi.Timestamp,
       }));
@@ -173,9 +174,9 @@ export class LTAService {
     const cacheKey = 'traffic_incidents';
     
     return this.cache.getOrSet(cacheKey, async () => {
-      const response = await this.client.get('/TrafficIncidents');
+      const response = await this.client.get<{ value: { Type: string; Message: string; Latitude?: number; Longitude?: number }[] }>('/TrafficIncidents');
       
-      return response.data.value.map((incident: any): TrafficIncident => ({
+      return response.data.value.map((incident): TrafficIncident => ({
         type: incident.Type,
         message: incident.Message,
         coordinates: incident.Latitude && incident.Longitude 

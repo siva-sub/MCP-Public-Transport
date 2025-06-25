@@ -73,7 +73,7 @@ export class CacheService {
     logger.info('Cache flushed');
   }
 
-  getStats() {
+  getStats(): any {
     const cacheStats = this.cache.getStats();
     return {
       ...cacheStats,
