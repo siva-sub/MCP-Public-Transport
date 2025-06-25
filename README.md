@@ -1,8 +1,6 @@
 # Singapore Location Intelligence MCP 🇸🇬
 
-[![CI/CD](https://github.com/siva-sub/MCP-Public-Transport/actions/workflows/ci.yml/badge.svg)](https://github.com/siva-sub/MCP-Public-Transport/actions)
-[![npm version](https://badge.fury.io/js/%40siva-sub%2Fmcp-public-transport.svg)](https://badge.fury.io/js/%40siva-sub%2Fmcp-public-transport)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![CI/CD](https://github.com/siva-sub/MCP-Public-Transport/actions/workflows/ci.yml/badge.svg)](https://github.com/siva-sub/MCP-Public-Transport/actions) [![npm version](https://badge.fury.io/js/%40siva-sub%2Fmcp-public-transport.svg)](https://badge.fury.io/js/%40siva-sub%2Fmcp-public-transport) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A **comprehensive Singapore Location Intelligence Platform** built as a Model Context Protocol (MCP) server. Provides enterprise-grade transport routing, postal code resolution, and location intelligence with **Google Maps-level detailed navigation instructions** - all optimized for Singapore's unique transport ecosystem.
 
