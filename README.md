@@ -295,6 +295,12 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 MIT License - see [LICENSE](LICENSE) for details.
 
+## 💡 Creator's Motivation
+
+This project was created by **Siva (Sivasubramanian Ramanathan)** out of curiosity about Model Context Protocol (MCP) and how they can be integrated into modern AI applications. With MCPs being "all the rage" in the AI ecosystem, I wanted to test out the capabilities and see what could be built with this exciting new protocol.
+
+What started as an exploration into MCP integration evolved into a comprehensive Singapore Location Intelligence Platform, demonstrating the power of MCPs to create sophisticated, real-world applications that rival commercial solutions.
+
 ## 🙏 Acknowledgments
 
 - **Singapore Land Authority (SLA)** for OneMap API
@@ -304,4 +310,4 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with ❤️ for Singapore's smart city initiative**
+**Built with ❤️ for Singapore's smart city initiative and MCP exploration**
