@@ -1,6 +1,6 @@
 {
   "name": "@siva-sub/mcp-public-transport",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A Model Context Protocol server for Singapore transport data with real-time information and routing",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
