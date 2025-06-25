@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { BaseTool, ToolDefinition } from '../base.js';
 import { LTAService } from '../../services/lta.js';
+import { SingaporeTimeService } from '../../services/time.js';
 import { validateInput } from '../../utils/validation.js';
 import { logger } from '../../utils/logger.js';
 import { TrainServiceAlert } from '../../types/transport.js';
@@ -10,8 +11,11 @@ const TrainStatusInputSchema = z.object({
 });
 
 export class TrainStatusTool extends BaseTool {
+  private timeService: SingaporeTimeService;
+
   constructor(private ltaService: LTAService) {
     super();
+    this.timeService = new SingaporeTimeService();
   }
 
   getDefinitions(): ToolDefinition[] {
@@ -54,14 +58,20 @@ export class TrainStatusTool extends BaseTool {
       const overallStatus = alerts.length === 0 ? 'normal' : 
                            alerts.length < 3 ? 'minor_disruptions' : 'major_disruptions';
 
+      // Get Singapore time context
+      const timeContext = this.timeService.getCurrentTime();
+      const operatingStatus = this.getOperatingStatus(timeContext);
+
       return {
         overallStatus,
-        summary: this.createStatusSummary(alerts),
+        summary: this.createStatusSummary(alerts, operatingStatus),
         disruptions: filteredAlerts,
         affectedLines: Array.from(affectedLines),
         normalLines,
-        recommendations: this.generateRecommendations(alerts),
-        timestamp: new Date().toISOString(),
+        recommendations: this.generateRecommendations(alerts, operatingStatus),
+        singaporeTime: timeContext.formatted.full,
+        operatingHours: operatingStatus,
+        timestamp: timeContext.datetime,
       };
     } catch (error) {
       logger.error(`Train status tool failed: ${toolName}`, error);
@@ -69,7 +79,33 @@ export class TrainStatusTool extends BaseTool {
     }
   }
 
-  private createStatusSummary(alerts: TrainServiceAlert[]): string {
+  private getOperatingStatus(timeContext: any): { status: string; description: string } {
+    const hour = new Date(timeContext.datetime).getHours();
+    
+    // MRT/LRT typically operates from 5:30 AM to midnight/1 AM
+    if (hour >= 6 && hour < 24) {
+      return {
+        status: 'operating',
+        description: 'All train services are within normal operating hours (6:00 AM - 12:00 AM)'
+      };
+    } else if (hour >= 0 && hour < 6) {
+      return {
+        status: 'limited',
+        description: 'Train services are currently not operating (Normal hours: 6:00 AM - 12:00 AM)'
+      };
+    } else {
+      return {
+        status: 'limited', 
+        description: 'Train services may be ending soon (Last trains around 12:00 AM - 1:00 AM)'
+      };
+    }
+  }
+
+  private createStatusSummary(alerts: TrainServiceAlert[], operatingStatus?: any): string {
+    if (!operatingStatus || operatingStatus.status !== 'operating') {
+      return operatingStatus?.description || 'Train services are not currently operating';
+    }
+
     if (alerts.length === 0) {
       return 'All train services are operating normally';
     }
@@ -78,7 +114,7 @@ export class TrainStatusTool extends BaseTool {
     return `${lineCount} line${lineCount > 1 ? 's' : ''} experiencing disruptions`;
   }
 
-  private generateRecommendations(alerts: TrainServiceAlert[]): string[] {
+  private generateRecommendations(alerts: TrainServiceAlert[], operatingStatus?: any): string[] {
     const recommendations: string[] = [];
 
     if (alerts.length === 0) {

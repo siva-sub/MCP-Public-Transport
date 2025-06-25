@@ -25,16 +25,18 @@ export class SingaporeTimeService {
   getCurrentTime(): SingaporeTimeResult {
     try {
       const now = new Date();
+      
+      // Create a proper Singapore time Date object
       const singaporeTime = new Date(now.toLocaleString("en-US", { timeZone: this.timezone }));
       
       return {
         timezone: this.timezone,
-        datetime: singaporeTime.toISOString(),
-        timestamp: singaporeTime.getTime(),
+        datetime: now.toISOString(), // Keep original UTC ISO string
+        timestamp: now.getTime(),
         formatted: {
-          date: singaporeTime.toLocaleDateString('en-SG'),
-          time: singaporeTime.toLocaleTimeString('en-SG'),
-          full: singaporeTime.toLocaleString('en-SG'),
+          date: now.toLocaleDateString('en-SG', { timeZone: this.timezone }),
+          time: now.toLocaleTimeString('en-SG', { timeZone: this.timezone }),
+          full: now.toLocaleString('en-SG', { timeZone: this.timezone }),
         },
         businessContext: {
           isBusinessHours: this.isBusinessHours(singaporeTime),
