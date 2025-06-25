@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export interface ToolDefinition {
   name: string;
   description: string;

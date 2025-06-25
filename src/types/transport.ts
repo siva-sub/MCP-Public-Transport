@@ -62,7 +62,7 @@ export interface RouteSegment {
   cost?: number;
   service?: string;
   operator?: string;
-  realTimeInfo?: unknown;
+  realTimeInfo?: any;
 }
 
 export interface JourneyPlan {

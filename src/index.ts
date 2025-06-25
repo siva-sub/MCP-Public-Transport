@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
-import { Server } from '@modelcontextprotocol/sdk/server/index';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio';
-import { SingaporeTransportServer } from './server';
-import { loadEnvironment } from './config/environment';
-import { logger } from './utils/logger';
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { SingaporeTransportServer } from './server.js';
+import { loadEnvironment } from './config/environment.js';
+import { logger } from './utils/logger.js';
 
 const PACKAGE_VERSION = '1.0.0';
 
@@ -130,8 +130,18 @@ For more information: https://github.com/siva-sub/MCP-Public-Transport
   }
 }
 
-// Main execution
-if (require.main === module) {
+// Main execution - check if this file is being run directly
+function isMainModule(): boolean {
+  // For CommonJS
+  try {
+    return require.main === module;
+  } catch {
+    // For ES modules - fallback
+    return true; // Assume main module for ES builds
+  }
+}
+
+if (isMainModule()) {
   handleCliArgs();
   setupGracefulShutdown();
   main().catch((error) => {

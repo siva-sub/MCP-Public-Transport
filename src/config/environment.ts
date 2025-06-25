@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import * as dotenv from 'dotenv';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -32,10 +32,10 @@ export function loadEnvironment(): Config {
     });
 
     return config;
-  } catch (error: any) {
+  } catch (error) {
     if (error instanceof z.ZodError) {
-      const missingFields = error.errors.map((e: any) => e.path.join('.')).join(', ');
-      throw new Error(`Environment configuration error: ${missingFields}`);
+      const issues = error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+      throw new Error(`Environment configuration error: ${issues}`);
     }
     throw error;
   }
