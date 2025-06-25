@@ -2,7 +2,9 @@
 
 [![CI/CD](https://github.com/siva-sub/MCP-Public-Transport/actions/workflows/ci.yml/badge.svg)](https://github.com/siva-sub/MCP-Public-Transport/actions) [![npm version](https://img.shields.io/npm/v/@siva-sub/mcp-public-transport.svg)](https://www.npmjs.com/package/@siva-sub/mcp-public-transport) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A **comprehensive Singapore Location Intelligence Platform** built as a Model Context Protocol (MCP) server. Provides enterprise-grade transport routing, postal code resolution, and location intelligence with **Google Maps-level detailed navigation instructions** - all optimized for Singapore's unique transport ecosystem.
+As the creator of this project, I, Siva (Sivasubramanian Ramanathan), developed this comprehensive Singapore Location Intelligence Platform to explore the capabilities of the Model Context Protocol (MCP). My goal was to test how MCP could be leveraged to help AI accurately plan routes, while also showcasing my ability to work with various APIs and my expertise in the technologies involved.
+
+What began as an experiment with MCP integration evolved into a sophisticated, real-world application that demonstrates the power of this exciting new protocol to create tools that can rival commercial solutions. This platform provides enterprise-grade transport routing, postal code resolution, and location intelligence with Google Maps-level detailed navigation instructions, all optimized for Singapore's unique transport ecosystem.
 
 ## 🌟 Key Features
 
@@ -282,26 +284,13 @@ src/
 
 ## 🎯 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
-### Priority Areas
-- [ ] Additional transport modes (bike-sharing, e-scooters)
-- [ ] Enhanced accessibility features
-- [ ] Real-time crowd density integration
-- [ ] Multi-language support
-- [ ] Historical travel time analysis
+We welcome contributions! Please see our [Contributing Guide](https://github.com/siva-sub/MCP-Public-Transport/blob/main/CONTRIBUTING.md) for details.
 
 ## 📝 License
 
 MIT License - see [LICENSE](LICENSE) for details.
 
-## 💡 Creator's Motivation
-
-This project was created by **Siva (Sivasubramanian Ramanathan)** out of curiosity about Model Context Protocol (MCP) and how they can be integrated into modern AI applications. With MCPs being "all the rage" in the AI ecosystem, I wanted to test out the capabilities and see what could be built with this exciting new protocol.
-
-What started as an exploration into MCP integration evolved into a comprehensive Singapore Location Intelligence Platform, demonstrating the power of MCPs to create sophisticated, real-world applications that rival commercial solutions.
-
-## 🙏 Acknowledgments
+## � Acknowledgments
 
 - **Singapore Land Authority (SLA)** for OneMap API
 - **Land Transport Authority (LTA)** for DataMall API
