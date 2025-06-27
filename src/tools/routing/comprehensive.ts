@@ -5,6 +5,8 @@ import { LTAService } from '../../services/lta.js';
 import { WeatherService } from '../../services/weather.js';
 import { PolylineService } from '../../services/polylines.js';
 import { InstructionParserService, ParsedInstruction, RouteSummary } from '../../services/instructionParser.js';
+import { MRTExitService, MRTExitRecommendation } from '../../services/mrtExits.js';
+import { CacheService } from '../../services/cache.js';
 import { validateInput } from '../../utils/validation.js';
 import { logger } from '../../utils/logger.js';
 import { Location } from '../../types/transport.js';
@@ -89,6 +91,7 @@ interface ComprehensiveJourneyResponse {
 export class ComprehensiveJourneyTool extends BaseTool {
   private polylineService: PolylineService;
   private instructionParser: InstructionParserService;
+  private mrtExitService: MRTExitService;
 
   constructor(
     private oneMapService: OneMapService,
@@ -98,6 +101,7 @@ export class ComprehensiveJourneyTool extends BaseTool {
     super();
     this.polylineService = new PolylineService();
     this.instructionParser = new InstructionParserService();
+    this.mrtExitService = new MRTExitService(new CacheService());
   }
 
   getDefinitions(): ToolDefinition[] {
@@ -740,14 +744,14 @@ export class ComprehensiveJourneyTool extends BaseTool {
     return `${hours}${minutes}${seconds}`;
   }
 
-  private processPublicTransportResponse(response: any, input: any): any {
+  private async processPublicTransportResponse(response: any, input: any): Promise<any> {
     try {
       // OneMapService returns a JourneyPlan object, not raw API response
       if (!response || !response.segments || response.segments.length === 0) {
         return null;
       }
 
-      const instructions = this.parseJourneyPlanInstructions(response);
+      const instructions = await this.parseJourneyPlanInstructions(response);
       const polylines = this.extractJourneyPlanPolylines(response);
       
       return {
@@ -770,14 +774,14 @@ export class ComprehensiveJourneyTool extends BaseTool {
     }
   }
 
-  private processDirectRouteResponse(response: any, input: any): any {
+  private async processDirectRouteResponse(response: any, input: any): Promise<any> {
     try {
       // OneMapService returns a JourneyPlan object for direct routes too
       if (!response || !response.segments || response.segments.length === 0) {
         return null;
       }
 
-      const instructions = this.parseJourneyPlanInstructions(response);
+      const instructions = await this.parseJourneyPlanInstructions(response);
       const polylines = this.extractJourneyPlanPolylines(response);
       
       return {
@@ -915,7 +919,7 @@ export class ComprehensiveJourneyTool extends BaseTool {
     return polylines;
   }
 
-  private parseJourneyPlanInstructions(journeyPlan: any): ParsedInstruction[] {
+  private async parseJourneyPlanInstructions(journeyPlan: any): Promise<ParsedInstruction[]> {
     const instructions: ParsedInstruction[] = [];
     let stepNumber = 1;
 
@@ -935,10 +939,31 @@ export class ComprehensiveJourneyTool extends BaseTool {
         });
       } else {
         const transitMode = this.mapTransitMode(segment.mode);
+        
+        // Enhanced instruction with MRT exit recommendation
+        let enhancedInstruction = segment.instructions?.[0] || `Take ${segment.service || segment.mode} from ${segment.startLocation.name} to ${segment.endLocation.name}`;
+        
+        // Add MRT exit recommendation for MRT/LRT stations
+        if (transitMode === 'SUBWAY' || transitMode === 'TRAIN') {
+          try {
+            const exitRecommendation = await this.mrtExitService.findBestMRTExit(
+              segment.endLocation.name,
+              segment.endLocation.latitude,
+              segment.endLocation.longitude
+            );
+            
+            if (exitRecommendation) {
+              enhancedInstruction += ` → Use ${exitRecommendation.recommendedExit.exitCode} (${exitRecommendation.walkingDistance}m walk, ${exitRecommendation.walkingTime} min)`;
+            }
+          } catch (error) {
+            logger.warn('Failed to get MRT exit recommendation', error);
+          }
+        }
+        
         instructions.push({
           step: stepNumber++,
           type: 'transit',
-          instruction: segment.instructions?.[0] || `Take ${segment.service || segment.mode} from ${segment.startLocation.name} to ${segment.endLocation.name}`,
+          instruction: enhancedInstruction,
           distance: Math.round(segment.distance || 0),
           duration: Math.round(segment.duration || 0),
           mode: transitMode,

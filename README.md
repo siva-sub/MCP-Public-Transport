@@ -8,7 +8,14 @@ What began as an experiment with MCP integration evolved into a sophisticated, r
 
 ## 🌟 Key Features
 
-### 🎯 **NEW in v0.2.7** - Weather Service Fixes & Enhanced Reliability
+### 🎯 **NEW in v0.3.0** - MRT Exit Integration & Landmarks Tool Fix
+- 🚇 **MRT Exit Recommendations** - Google Maps-level precision with specific exit codes
+- 🏛️ **Enhanced Location Resolution** - Fixed JSON string parsing and coordinate validation
+- 📍 **Exit-Level Navigation** - "Use Exit E (14m walk, 1 min)" for optimal station navigation
+- 🔧 **Robust Input Handling** - All location formats now work correctly
+- 🎯 **Singapore-Optimized** - Proper coordinate bounds and postal code validation
+
+### 🎯 **v0.2.7** - Weather Service Fixes & Enhanced Reliability
 - 🌦️ **Robust Weather Integration** - Fixed all weather API inconsistencies and crashes
 - 🔧 **Production-Ready Error Handling** - Graceful degradation when weather APIs fail
 - 🎯 **Singapore Weather API Compatibility** - Supports all 5 official weather endpoints

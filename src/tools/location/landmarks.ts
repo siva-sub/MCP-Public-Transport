@@ -241,28 +241,87 @@ export class LandmarksDiscoveryTool extends BaseTool {
     }
   }
 
-  private async resolveLocation(locationInput: any) {
+  private async resolveLocation(locationInput: any): Promise<{ latitude: number; longitude: number; name: string; address: string } | null> {
     try {
+      // Handle JSON string inputs (like the failing examples)
+      if (typeof locationInput === 'string') {
+        try {
+          const parsed = JSON.parse(locationInput);
+          if (parsed && typeof parsed === 'object') {
+            return this.resolveLocation(parsed);
+          }
+        } catch {
+          // Continue with string geocoding
+        }
+      }
+
       // Handle coordinate objects
       if (locationInput && typeof locationInput === 'object' && 'latitude' in locationInput) {
+        const lat = parseFloat(locationInput.latitude);
+        const lng = parseFloat(locationInput.longitude);
+        
+        // Validate Singapore coordinates
+        if (lat < 1.0 || lat > 1.5 || lng < 103.0 || lng > 104.5) {
+          logger.warn('Coordinates outside Singapore bounds', { lat, lng });
+          return null;
+        }
+        
         return {
-          latitude: locationInput.latitude,
-          longitude: locationInput.longitude,
+          latitude: lat,
+          longitude: lng,
           name: locationInput.name || 'Custom Location',
-          address: locationInput.name || `${locationInput.latitude.toFixed(6)}, ${locationInput.longitude.toFixed(6)}`,
+          address: locationInput.name || `${lat.toFixed(6)}, ${lng.toFixed(6)}`,
         };
       }
 
       // Handle postal code objects
       if (locationInput && typeof locationInput === 'object' && 'postalCode' in locationInput) {
-        return await this.oneMapService.geocode(locationInput.postalCode);
+        const postalCode = locationInput.postalCode.toString();
+        if (!/^\d{6}$/.test(postalCode)) {
+          logger.warn('Invalid postal code format', { postalCode });
+          return null;
+        }
+        const result = await this.oneMapService.geocode(postalCode);
+        if (result) {
+          return {
+            latitude: result.latitude,
+            longitude: result.longitude,
+            name: result.name || 'Unknown Location',
+            address: result.address || 'Unknown Address'
+          };
+        }
+        return null;
       }
 
       // Handle string inputs (addresses, landmarks, postal codes)
       if (typeof locationInput === 'string') {
-        return await this.oneMapService.geocode(locationInput);
+        // Check if it's a 6-digit postal code
+        if (/^\d{6}$/.test(locationInput)) {
+          const result = await this.oneMapService.geocode(locationInput);
+          if (result) {
+            return {
+              latitude: result.latitude,
+              longitude: result.longitude,
+              name: result.name || 'Unknown Location',
+              address: result.address || 'Unknown Address'
+            };
+          }
+          return null;
+        }
+        // Otherwise treat as address/landmark
+        const result = await this.oneMapService.geocode(locationInput);
+        if (result) {
+          return {
+            latitude: result.latitude,
+            longitude: result.longitude,
+            name: result.name || 'Unknown Location',
+            address: result.address || 'Unknown Address'
+          };
+        }
+        return null;
       }
 
+      logger.warn('Unrecognized location input format', { locationInput });
       return null;
     } catch (error) {
       logger.error('Location resolution failed', { error, input: locationInput });
