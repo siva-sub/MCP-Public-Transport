@@ -6,12 +6,14 @@ import { LocationResult, SearchStrategy } from '../../types/location.js';
 import { OneMapService } from '../../services/onemap.js';
 import { PostalCodeService } from '../../services/postalCode.js';
 import { SingaporeTimeService } from '../../services/time.js';
+import { FuzzySearchService } from '../../services/fuzzySearch.js';
 
 export class LocationSearchTool extends BaseTool {
   constructor(
     private oneMapService: OneMapService,
     private postalCodeService: PostalCodeService,
-    private timeService: SingaporeTimeService
+    private timeService: SingaporeTimeService,
+    private fuzzySearchService?: FuzzySearchService
   ) {
     super();
   }

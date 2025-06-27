@@ -11,14 +11,20 @@ import { TransportError } from './utils/errors.js';
 // Import all tools
 import { BusArrivalTool } from './tools/bus/arrival.js';
 import { BusStopsTool } from './tools/bus/stops.js';
+import { BusStopSearchTool } from './tools/bus/search.js';
+import { BusStopDetailsTool } from './tools/bus/details.js';
 import { TrainStatusTool } from './tools/train/status.js';
 import { JourneyPlanningTool } from './tools/routing/journey.js';
+import { EnhancedJourneyPlanningTool } from './tools/routing/enhanced.js';
 import { TaxiAvailabilityTool } from './tools/taxi/availability.js';
 import { LocationSearchTool } from './tools/location/search.js';
 
 // Import enhanced services
 import { PostalCodeService } from './services/postalCode.js';
 import { SingaporeTimeService } from './services/time.js';
+import { FuzzySearchService } from './services/fuzzySearch.js';
+import { WeatherService } from './services/weather.js';
+import { EnhancedRoutingService } from './services/routing.js';
 
 export class SingaporeTransportServer {
   private ltaService: LTAService;
@@ -46,15 +52,26 @@ export class SingaporeTransportServer {
     // Initialize enhanced services
     const postalCodeService = new PostalCodeService(this.oneMapService, this.cacheService);
     const timeService = new SingaporeTimeService();
+    const fuzzySearchService = new FuzzySearchService();
+    const weatherService = new WeatherService(this.cacheService);
+    const enhancedRoutingService = new EnhancedRoutingService(
+      this.oneMapService,
+      this.ltaService,
+      weatherService,
+      this.cacheService
+    );
 
     // Initialize all tools
     this.tools = [
       new BusArrivalTool(this.ltaService),
       new BusStopsTool(this.ltaService, this.oneMapService),
+      new BusStopSearchTool(this.ltaService, this.oneMapService, fuzzySearchService),
+      new BusStopDetailsTool(this.ltaService, this.oneMapService),
       new TrainStatusTool(this.ltaService),
       new JourneyPlanningTool(this.oneMapService, this.ltaService),
+      new EnhancedJourneyPlanningTool(enhancedRoutingService),
       new TaxiAvailabilityTool(this.ltaService, this.oneMapService),
-      new LocationSearchTool(this.oneMapService, postalCodeService, timeService),
+      new LocationSearchTool(this.oneMapService, postalCodeService, timeService, fuzzySearchService),
     ];
 
     // Get all tool definitions
