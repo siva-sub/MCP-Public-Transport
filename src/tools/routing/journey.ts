@@ -207,10 +207,13 @@ export class JourneyPlanningTool extends BaseTool {
     const alternatives: JourneyPlan[] = [];
 
     try {
-      // Walking alternative (if not primary mode)
-      if (primaryMode !== 'WALK') {
+      // Calculate distance between points to determine practical alternatives
+      const distance = this.calculateDistance(from.latitude, from.longitude, to.latitude, to.longitude);
+      
+      // Walking alternative (only if reasonable distance and not primary mode)
+      if (primaryMode !== 'WALK' && distance <= 5000) { // Max 5km for walking
         const walkingRoute = await this.oneMapService.planRoute(from, to, { mode: 'WALK' });
-        if (walkingRoute) {
+        if (walkingRoute && walkingRoute.totalDuration <= 3600) { // Max 1 hour walk
           alternatives.push({
             ...walkingRoute,
             summary: `Walking route: ${walkingRoute.summary}`,
@@ -244,7 +247,7 @@ export class JourneyPlanningTool extends BaseTool {
             maxWalkDistance: altPreferences.maxWalkDistance,
           });
           
-          if (cheaperRoute) {
+          if (cheaperRoute && this.isDifferentRoute(cheaperRoute, alternatives)) {
             alternatives.push({
               ...cheaperRoute,
               summary: `Budget-friendly: ${cheaperRoute.summary}`,
@@ -256,7 +259,64 @@ export class JourneyPlanningTool extends BaseTool {
       logger.warn('Failed to get some alternative routes', error);
     }
 
-    return alternatives;
+    // Filter and sort alternatives
+    return this.filterAndSortAlternatives(alternatives);
+  }
+
+  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371e3; // Earth's radius in metres
+    const φ1 = lat1 * Math.PI/180;
+    const φ2 = lat2 * Math.PI/180;
+    const Δφ = (lat2-lat1) * Math.PI/180;
+    const Δλ = (lon2-lon1) * Math.PI/180;
+
+    const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+              Math.cos(φ1) * Math.cos(φ2) *
+              Math.sin(Δλ/2) * Math.sin(Δλ/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+    return R * c;
+  }
+
+  private isDifferentRoute(newRoute: JourneyPlan, existingRoutes: JourneyPlan[]): boolean {
+    // Check if this route is significantly different from existing ones
+    for (const existing of existingRoutes) {
+      const timeDiff = Math.abs(newRoute.totalDuration - existing.totalDuration);
+      const costDiff = Math.abs((newRoute.totalCost || 0) - (existing.totalCost || 0));
+      
+      // If time difference is less than 5 minutes and cost difference is less than $0.50, consider it similar
+      if (timeDiff < 300 && costDiff < 0.5) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private filterAndSortAlternatives(alternatives: JourneyPlan[]): JourneyPlan[] {
+    // Filter out impractical routes
+    const filtered = alternatives.filter(route => {
+      // Remove routes that are too long (over 4 hours)
+      if (route.totalDuration > 14400) return false;
+      
+      // Remove walking routes over 22km (like the problematic one)
+      if (route.totalWalkDistance > 22000) return false;
+      
+      // Remove routes with excessive instructions (over 50 steps)
+      const totalInstructions = route.segments.reduce((sum, segment) => sum + segment.instructions.length, 0);
+      if (totalInstructions > 50) return false;
+      
+      return true;
+    });
+
+    // Sort by practicality (time, then cost)
+    return filtered.sort((a, b) => {
+      // First sort by total time
+      const timeDiff = a.totalDuration - b.totalDuration;
+      if (Math.abs(timeDiff) > 300) return timeDiff; // If time difference > 5 minutes
+      
+      // Then by cost
+      return (a.totalCost || 0) - (b.totalCost || 0);
+    }).slice(0, 3); // Limit to top 3 alternatives
   }
 
   private estimateTaxiCost(distanceM: number, durationSec: number): number {

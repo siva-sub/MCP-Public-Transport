@@ -484,14 +484,47 @@ export class OneMapService {
 
   private formatDirectRoutingResponse(data: OneMapRouteResponse): JourneyPlan {
     const instructions: string[] = [];
+    let startCoords = { latitude: 0, longitude: 0 };
+    let endCoords = { latitude: 0, longitude: 0 };
     
     // Process detailed turn-by-turn instructions
     if (data.route_instructions) {
-      for (const instruction of data.route_instructions) {
+      for (let i = 0; i < data.route_instructions.length; i++) {
+        const instruction = data.route_instructions[i];
         const [direction, streetName, distance, coordinates, timeSeconds, distanceFormatted, fromDirection, toDirection, mode, instructionText] = instruction;
         
-        // Create detailed instruction text like "Turn Left To Stay On Thomson Road"
-        instructions.push(instructionText);
+        // Parse coordinates from the first and last instructions
+        if (i === 0 && coordinates) {
+          const coords = coordinates.split(',');
+          if (coords.length >= 2) {
+            startCoords = {
+              latitude: parseFloat(coords[0]),
+              longitude: parseFloat(coords[1])
+            };
+          }
+        }
+        
+        if (i === data.route_instructions.length - 1 && coordinates) {
+          const coords = coordinates.split(',');
+          if (coords.length >= 2) {
+            endCoords = {
+              latitude: parseFloat(coords[0]),
+              longitude: parseFloat(coords[1])
+            };
+          }
+        }
+        
+        // Use the detailed instruction text from OneMap
+        if (instructionText && instructionText.trim()) {
+          instructions.push(instructionText);
+        } else {
+          // Fallback to constructing instruction from components
+          if (streetName && streetName.trim()) {
+            instructions.push(`${direction} on ${streetName} for ${distanceFormatted || distance + 'm'}`);
+          } else {
+            instructions.push(`${direction} for ${distanceFormatted || distance + 'm'}`);
+          }
+        }
       }
     }
 
@@ -505,13 +538,13 @@ export class OneMapService {
       distance: totalDistance,
       instructions,
       startLocation: {
-        latitude: 0, // Coordinates would need to be parsed from route_instructions
-        longitude: 0,
+        latitude: startCoords.latitude,
+        longitude: startCoords.longitude,
         name: data.route_summary?.start_point || 'Origin',
       },
       endLocation: {
-        latitude: 0, // Coordinates would need to be parsed from route_instructions  
-        longitude: 0,
+        latitude: endCoords.latitude,
+        longitude: endCoords.longitude,
         name: data.route_summary?.end_point || 'Destination',
       },
     }];

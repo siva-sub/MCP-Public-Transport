@@ -247,13 +247,46 @@ export class EnhancedJourneyPlanningTool extends BaseTool {
       };
     }
 
-    // TODO: Implement location resolution using existing services
-    // This would use the OneMapService and PostalCodeService to resolve
-    // names and postal codes to coordinates
-    
-    // For now, return null if coordinates aren't provided
-    logger.warn('Location resolution not yet implemented for names/postal codes');
-    return null;
+    try {
+      // Try to resolve using OneMap geocoding service
+      if (location.name) {
+        // Use the routing service's OneMap service to geocode the location
+        const geocodeResult = await this.routingService['oneMapService'].geocode(location.name);
+        
+        if (geocodeResult) {
+          return {
+            latitude: geocodeResult.latitude,
+            longitude: geocodeResult.longitude,
+            name: location.name,
+          };
+        }
+      }
+
+      // Try postal code resolution if available
+      if (location.postalCode) {
+        // Extract postal code from name if it contains one
+        const postalCodeMatch = location.name?.match(/\b\d{6}\b/);
+        const postalCode = location.postalCode || postalCodeMatch?.[0];
+        
+        if (postalCode) {
+          const geocodeResult = await this.routingService['oneMapService'].geocode(postalCode);
+          
+          if (geocodeResult) {
+            return {
+              latitude: geocodeResult.latitude,
+              longitude: geocodeResult.longitude,
+              name: location.name || geocodeResult.address,
+            };
+          }
+        }
+      }
+
+      logger.warn('Could not resolve location', { location });
+      return null;
+    } catch (error) {
+      logger.error('Location resolution failed', error);
+      return null;
+    }
   }
 
   private generateAlternativeReason(
