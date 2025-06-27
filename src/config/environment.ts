@@ -6,18 +6,17 @@ dotenv.config();
 const ConfigSchema = z.object({
   // Existing configs
   ltaAccountKey: z.string().min(1, 'LTA_ACCOUNT_KEY is required'),
-  oneMapToken: z.string().optional(),
   cacheDuration: z.coerce.number().default(300),
   logLevel: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
   maxWalkDistance: z.coerce.number().default(1000),
   enableCrowdPrediction: z.coerce.boolean().default(true),
   enableCostOptimization: z.coerce.boolean().default(true),
-  requestTimeout: z.coerce.number().default(5000), // Reduced for testing
+  requestTimeout: z.coerce.number().default(30000), // Increased for OneMap API
   maxConcurrentRequests: z.coerce.number().default(10),
   
-  // New location intelligence configs
-  oneMapEmail: z.string().email().optional(),
-  oneMapPassword: z.string().optional(),
+  // OneMap authentication configs (required for routing)
+  oneMapEmail: z.string().email('ONEMAP_EMAIL must be a valid email address'),
+  oneMapPassword: z.string().min(1, 'ONEMAP_PASSWORD is required'),
   enableFuzzySearch: z.coerce.boolean().default(true),
   maxSearchResults: z.coerce.number().default(10),
   searchTimeout: z.coerce.number().default(5000),
@@ -37,7 +36,6 @@ export function loadEnvironment(): Config {
     const config = ConfigSchema.parse({
       // Existing configs
       ltaAccountKey: process.env.LTA_ACCOUNT_KEY,
-      oneMapToken: process.env.ONEMAP_TOKEN,
       cacheDuration: process.env.CACHE_DURATION,
       logLevel: process.env.LOG_LEVEL,
       maxWalkDistance: process.env.MAX_WALK_DISTANCE,

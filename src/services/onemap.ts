@@ -174,7 +174,7 @@ export class OneMapService {
       logger.info('Refreshing OneMap authentication token');
       
       // Use the correct authentication endpoint
-      const response = await axios.post('https://developers.onemap.sg/privateapi/auth/post/getToken', {
+      const response = await axios.post('https://www.onemap.gov.sg/api/auth/post/getToken', {
         email: this.email,
         password: this.password,
       }, {
@@ -325,10 +325,10 @@ export class OneMapService {
 
       const routeType = this.mapModeToRouteType(options.mode || 'PUBLIC_TRANSPORT');
       
-      // Properly encode coordinates for URL
+      // Format coordinates properly for OneMap API (no encoding needed)
       const params: any = {
-        start: encodeURIComponent(`${from.latitude},${from.longitude}`),
-        end: encodeURIComponent(`${to.latitude},${to.longitude}`),
+        start: `${from.latitude},${from.longitude}`,
+        end: `${to.latitude},${to.longitude}`,
         routeType,
       };
 

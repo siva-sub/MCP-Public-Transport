@@ -8,6 +8,13 @@ What began as an experiment with MCP integration evolved into a sophisticated, r
 
 ## 🌟 Key Features
 
+### 🎯 **NEW in v0.2.7** - Weather Service Fixes & Enhanced Reliability
+- 🌦️ **Robust Weather Integration** - Fixed all weather API inconsistencies and crashes
+- 🔧 **Production-Ready Error Handling** - Graceful degradation when weather APIs fail
+- 🎯 **Singapore Weather API Compatibility** - Supports all 5 official weather endpoints
+- ⚡ **Enhanced Journey Planning** - Weather-aware routing with resilient fallbacks
+- 🛡️ **Zero-Crash Guarantee** - Weather service failures no longer break journey planning
+
 ### 🎯 **NEW in v0.2.1** - Weather Intelligence
 - 🌦️ **Standalone Weather Tools** - Comprehensive weather conditions and activity-specific advisories
 - 🎯 **Activity Recommendations** - Tailored advice for walking, cycling, sports, photography, dining

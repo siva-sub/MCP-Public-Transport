@@ -7,7 +7,11 @@ export interface WeatherStation {
   id: string;
   deviceId: string;
   name: string;
-  labelLocation: {
+  labelLocation?: {  // Optional - used by most APIs
+    latitude: number;
+    longitude: number;
+  };
+  location?: {       // Optional - used by Wind Speed API
     latitude: number;
     longitude: number;
   };
@@ -164,51 +168,119 @@ export class WeatherService {
     longitude: number
   ): Promise<WeatherConditions> {
     try {
-      // Get all weather data in parallel
-      const [rainfall, temperature, humidity, windSpeed, windDirection] = await Promise.all([
-        this.getRainfall(),
-        this.getAirTemperature(),
-        this.getRelativeHumidity(),
-        this.getWindSpeed(),
-        this.getWindDirection(),
-      ]);
-
-      // Find nearest weather station for each parameter
-      const nearestRainfallStation = this.findNearestStation(latitude, longitude, rainfall.stations);
-      const nearestTempStation = this.findNearestStation(latitude, longitude, temperature.stations);
-      const nearestHumidityStation = this.findNearestStation(latitude, longitude, humidity.stations);
-      const nearestWindSpeedStation = this.findNearestStation(latitude, longitude, windSpeed.stations);
-      const nearestWindDirStation = this.findNearestStation(latitude, longitude, windDirection.stations);
-
-      // Get latest readings for each parameter
-      const rainfallValue = this.getLatestReading(rainfall, nearestRainfallStation.id);
-      const tempValue = this.getLatestReading(temperature, nearestTempStation.id);
-      const humidityValue = this.getLatestReading(humidity, nearestHumidityStation.id);
-      const windSpeedValue = this.getLatestReading(windSpeed, nearestWindSpeedStation.id);
-      const windDirValue = this.getLatestReading(windDirection, nearestWindDirStation.id);
-
-      return {
-        temperature: tempValue || 30, // Default to 30°C if no data
-        rainfall: rainfallValue || 0,
-        humidity: humidityValue || 70,
-        windSpeed: windSpeedValue || 5,
-        windDirection: windDirValue || 0,
-        location: { latitude, longitude },
-        timestamp: new Date().toISOString(),
-      };
+      // Get all weather data with individual error handling
+      const weatherData = await this.getAllWeatherData();
+      
+      // Process each type with fallbacks
+      const conditions = this.processWeatherData(weatherData, latitude, longitude);
+      
+      return conditions;
     } catch (error) {
       logger.error('Failed to get weather conditions', error);
-      // Return default conditions if weather API fails
-      return {
-        temperature: 30,
-        rainfall: 0,
-        humidity: 70,
-        windSpeed: 5,
-        windDirection: 0,
-        location: { latitude, longitude },
-        timestamp: new Date().toISOString(),
-      };
+      return this.getDefaultWeatherConditions(latitude, longitude);
     }
+  }
+
+  private async getAllWeatherData() {
+    const results = await Promise.allSettled([
+      this.getRainfall(),
+      this.getAirTemperature(),
+      this.getRelativeHumidity(),
+      this.getWindSpeed(),
+      this.getWindDirection(),
+    ]);
+
+    return {
+      rainfall: results[0].status === 'fulfilled' ? results[0].value : null,
+      temperature: results[1].status === 'fulfilled' ? results[1].value : null,
+      humidity: results[2].status === 'fulfilled' ? results[2].value : null,
+      windSpeed: results[3].status === 'fulfilled' ? results[3].value : null,
+      windDirection: results[4].status === 'fulfilled' ? results[4].value : null,
+    };
+  }
+
+  private processWeatherData(
+    weatherData: any,
+    latitude: number,
+    longitude: number
+  ): WeatherConditions {
+    let rainfallValue = 0;
+    let tempValue = 30;
+    let humidityValue = 70;
+    let windSpeedValue = 5;
+    let windDirValue = 0;
+
+    // Process rainfall data
+    if (weatherData.rainfall) {
+      try {
+        const nearestStation = this.findNearestStation(latitude, longitude, weatherData.rainfall.stations);
+        rainfallValue = this.getLatestReading(weatherData.rainfall, nearestStation.id) || 0;
+      } catch (error) {
+        logger.warn('Failed to process rainfall data', error);
+      }
+    }
+
+    // Process temperature data
+    if (weatherData.temperature) {
+      try {
+        const nearestStation = this.findNearestStation(latitude, longitude, weatherData.temperature.stations);
+        tempValue = this.getLatestReading(weatherData.temperature, nearestStation.id) || 30;
+      } catch (error) {
+        logger.warn('Failed to process temperature data', error);
+      }
+    }
+
+    // Process humidity data
+    if (weatherData.humidity) {
+      try {
+        const nearestStation = this.findNearestStation(latitude, longitude, weatherData.humidity.stations);
+        humidityValue = this.getLatestReading(weatherData.humidity, nearestStation.id) || 70;
+      } catch (error) {
+        logger.warn('Failed to process humidity data', error);
+      }
+    }
+
+    // Process wind speed data
+    if (weatherData.windSpeed) {
+      try {
+        const nearestStation = this.findNearestStation(latitude, longitude, weatherData.windSpeed.stations);
+        windSpeedValue = this.getLatestReading(weatherData.windSpeed, nearestStation.id) || 5;
+      } catch (error) {
+        logger.warn('Failed to process wind speed data', error);
+      }
+    }
+
+    // Process wind direction data
+    if (weatherData.windDirection) {
+      try {
+        const nearestStation = this.findNearestStation(latitude, longitude, weatherData.windDirection.stations);
+        windDirValue = this.getLatestReading(weatherData.windDirection, nearestStation.id) || 0;
+      } catch (error) {
+        logger.warn('Failed to process wind direction data', error);
+      }
+    }
+
+    return {
+      temperature: tempValue,
+      rainfall: rainfallValue,
+      humidity: humidityValue,
+      windSpeed: windSpeedValue,
+      windDirection: windDirValue,
+      location: { latitude, longitude },
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  private getDefaultWeatherConditions(latitude: number, longitude: number): WeatherConditions {
+    return {
+      temperature: 30,
+      rainfall: 0,
+      humidity: 70,
+      windSpeed: 5,
+      windDirection: 0,
+      location: { latitude, longitude },
+      timestamp: new Date().toISOString(),
+    };
   }
 
   generateWeatherAdvisory(conditions: WeatherConditions): WeatherAdvisory[] {
@@ -295,30 +367,45 @@ export class WeatherService {
     return advisories;
   }
 
+  private getStationCoordinates(station: WeatherStation): { latitude: number; longitude: number } {
+    // Handle both labelLocation (most APIs) and location (Wind Speed API)
+    const coords = station.labelLocation || station.location;
+    if (!coords || typeof coords.latitude !== 'number' || typeof coords.longitude !== 'number') {
+      throw new Error(`Invalid station coordinates for station ${station.id}`);
+    }
+    return coords;
+  }
+
   private findNearestStation(
     latitude: number,
     longitude: number,
     stations: WeatherStation[]
   ): WeatherStation {
+    // Validate input
+    if (!stations || stations.length === 0) {
+      throw new Error('No weather stations available');
+    }
+
     let nearestStation = stations[0];
-    let minDistance = this.calculateDistance(
-      latitude,
-      longitude,
-      stations[0].labelLocation.latitude,
-      stations[0].labelLocation.longitude
-    );
+    let minDistance = Infinity;
 
-    for (const station of stations.slice(1)) {
-      const distance = this.calculateDistance(
-        latitude,
-        longitude,
-        station.labelLocation.latitude,
-        station.labelLocation.longitude
-      );
+    for (const station of stations) {
+      try {
+        const stationCoords = this.getStationCoordinates(station);
+        const distance = this.calculateDistance(
+          latitude,
+          longitude,
+          stationCoords.latitude,
+          stationCoords.longitude
+        );
 
-      if (distance < minDistance) {
-        minDistance = distance;
-        nearestStation = station;
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearestStation = station;
+        }
+      } catch (error) {
+        logger.warn(`Skipping invalid station ${station.id}:`, error);
+        continue;
       }
     }
 

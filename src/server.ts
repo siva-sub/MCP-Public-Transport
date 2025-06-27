@@ -14,10 +14,10 @@ import { BusStopsTool } from './tools/bus/stops.js';
 import { BusStopSearchTool } from './tools/bus/search.js';
 import { BusStopDetailsTool } from './tools/bus/details.js';
 import { TrainStatusTool } from './tools/train/status.js';
-import { JourneyPlanningTool } from './tools/routing/journey.js';
 import { ComprehensiveJourneyTool } from './tools/routing/comprehensive.js';
 import { TaxiAvailabilityTool } from './tools/taxi/availability.js';
 import { LocationSearchTool } from './tools/location/search.js';
+import { LandmarksDiscoveryTool } from './tools/location/landmarks.js';
 import { WeatherConditionsTool } from './tools/weather/conditions.js';
 
 // Import enhanced services
@@ -25,6 +25,7 @@ import { PostalCodeService } from './services/postalCode.js';
 import { SingaporeTimeService } from './services/time.js';
 import { FuzzySearchService } from './services/fuzzySearch.js';
 import { WeatherService } from './services/weather.js';
+import { ThemesService } from './services/themes.js';
 
 export class SingaporeTransportServer {
   private ltaService: LTAService;
@@ -40,7 +41,7 @@ export class SingaporeTransportServer {
       config.requestTimeout
     );
     this.oneMapService = new OneMapService(
-      config.oneMapToken,
+      undefined, // No static token needed
       config.oneMapEmail,
       config.oneMapPassword,
       this.cacheService,
@@ -54,6 +55,7 @@ export class SingaporeTransportServer {
     const timeService = new SingaporeTimeService();
     const fuzzySearchService = new FuzzySearchService();
     const weatherService = new WeatherService(this.cacheService);
+    const themesService = new ThemesService(this.oneMapService, this.cacheService);
 
     // Initialize all tools
     this.tools = [
@@ -62,10 +64,10 @@ export class SingaporeTransportServer {
       new BusStopSearchTool(this.ltaService, this.oneMapService, fuzzySearchService),
       new BusStopDetailsTool(this.ltaService, this.oneMapService),
       new TrainStatusTool(this.ltaService),
-      new JourneyPlanningTool(this.oneMapService, this.ltaService),
       new ComprehensiveJourneyTool(this.oneMapService, this.ltaService, weatherService),
       new TaxiAvailabilityTool(this.ltaService, this.oneMapService),
       new LocationSearchTool(this.oneMapService, postalCodeService, timeService, fuzzySearchService),
+      new LandmarksDiscoveryTool(themesService, this.oneMapService),
       new WeatherConditionsTool(weatherService),
     ];
 
