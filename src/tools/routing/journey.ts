@@ -144,7 +144,7 @@ export class JourneyPlanningTool extends BaseTool {
                   },
                 },
                 required: ['latitude', 'longitude'],
-                description: 'Destination location as coordinates',
+                description: 'Starting location as coordinates',
               },
             ],
             description: 'Destination location - provide as address, postal code, or coordinates',

@@ -173,9 +173,15 @@ export class OneMapService {
     try {
       logger.info('Refreshing OneMap authentication token');
       
-      const response = await this.client.post('/auth/post/getToken', {
+      // Use the correct authentication endpoint
+      const response = await axios.post('https://developers.onemap.sg/privateapi/auth/post/getToken', {
         email: this.email,
         password: this.password,
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: this.timeout,
       });
 
       const { access_token, expiry_timestamp } = response.data;
@@ -185,7 +191,9 @@ export class OneMapService {
         expiry: parseInt(expiry_timestamp) * 1000, // Convert to milliseconds
       };
 
-      logger.info('OneMap token refreshed successfully');
+      logger.info('OneMap token refreshed successfully', {
+        expiry: new Date(this.tokenCache.expiry).toISOString()
+      });
       return access_token;
     } catch (error) {
       logger.error('Failed to refresh OneMap token', error);
@@ -343,11 +351,12 @@ export class OneMapService {
       }
 
       // Use the correct endpoint based on the API documentation
-      const endpoint = '/privateapi/routingsvc/route';
+      const routingUrl = 'https://developers.onemap.sg/privateapi/routingsvc/route';
       
-      // Make request with token as parameter (not header)
-      const response = await this.client.get<OneMapRouteResponse>(endpoint, { 
+      // Make request with token as parameter (not header) using direct axios call
+      const response = await axios.get<OneMapRouteResponse>(routingUrl, { 
         params,
+        timeout: this.timeout,
       });
       
       // Check response status

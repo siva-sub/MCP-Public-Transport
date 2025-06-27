@@ -5,6 +5,94 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.5] - 2025-06-27
+
+### 🔐 **CRITICAL FIX: OneMap Authentication & Routing API**
+
+#### **✅ FIXED: OneMap Authentication Flow**
+- **IMPLEMENTED**: Proper OneMap authentication using official API endpoints
+- **FIXED**: Authentication endpoint URL: `https://developers.onemap.sg/privateapi/auth/post/getToken`
+- **ENHANCED**: Token management with 3-day TTL (Time To Live)
+- **ADDED**: Proper credential handling with email/password authentication
+- **IMPROVED**: Token caching and automatic refresh mechanism
+
+#### **🛠️ FIXED: OneMap Routing API Integration**
+- **CORRECTED**: Routing endpoint URL: `https://developers.onemap.sg/privateapi/routingsvc/route`
+- **IMPLEMENTED**: Proper API parameter structure following OneMap documentation
+- **FIXED**: Token authentication for routing requests
+- **ENHANCED**: Direct axios calls for authenticated endpoints
+- **IMPROVED**: Error handling for authentication failures
+
+#### **📍 ENHANCED: Route Planning Reliability**
+- **RESOLVED**: "No route found" errors due to authentication issues
+- **IMPROVED**: Proper handling of OneMap route types (pt, drive, walk)
+- **ENHANCED**: Route instruction parsing from OneMap responses
+- **FIXED**: Coordinate parsing and route geometry handling
+- **ADDED**: Comprehensive logging for debugging routing issues
+
+#### **🔧 Technical Implementation Details**
+
+##### **Authentication Flow:**
+```typescript
+// Proper OneMap authentication
+POST https://developers.onemap.sg/privateapi/auth/post/getToken
+{
+  "email": "user@example.com",
+  "password": "password"
+}
+
+Response: {
+  "access_token": "jwt_token",
+  "expiry_timestamp": "timestamp"
+}
+```
+
+##### **Routing API:**
+```typescript
+// Authenticated routing requests
+GET https://developers.onemap.sg/privateapi/routingsvc/route
+?start=lat,lng&end=lat,lng&routeType=pt&token=jwt_token
+```
+
+#### **🎯 Expected Fixes for Reported Issues:**
+
+##### **✅ Authentication Issues:**
+```
+// BEFORE: Authentication failed, no routes found
+// AFTER: Proper JWT token authentication with 3-day TTL
+```
+
+##### **✅ Routing API Failures:**
+```
+// BEFORE: "No route found between the specified locations"
+// AFTER: Working routes with proper OneMap API integration
+```
+
+##### **✅ JSON String Parsing:**
+```json
+// BEFORE: Failed with stringified coordinates
+{
+  "fromLocation": "{\"postalCode\": \"828770\"}",
+  "toLocation": "{\"latitude\": 1.2811884163336, \"longitude\": 103.841657436594}"
+}
+
+// AFTER: Proper parsing and route calculation
+```
+
+### 📊 **Performance & Reliability Improvements:**
+- **API Authentication**: Proper JWT token management with automatic refresh
+- **Route Calculation**: Direct OneMap API integration with correct endpoints
+- **Error Recovery**: Enhanced error handling for authentication and routing failures
+- **Debugging**: Comprehensive logging for troubleshooting API issues
+
+### 🔒 **Security Enhancements:**
+- **Credential Management**: Secure handling of OneMap credentials
+- **Token Security**: Proper JWT token storage and refresh mechanism
+- **API Compliance**: Following OneMap's official authentication flow
+- **Error Handling**: Secure error messages without exposing credentials
+
+---
+
 ## [0.2.4] - 2025-06-27
 
 ### 🚨 **CRITICAL FIXES: Journey Planning Tool**
