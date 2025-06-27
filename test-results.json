@@ -1,0 +1,820 @@
+{
+  "timestamp": "2025-06-27T06:59:41.963Z",
+  "summary": {
+    "total": 7,
+    "successful": 7,
+    "failed": 0
+  },
+  "results": [
+    {
+      "scenario": "Public Transport - Complex Route (Punggol to Keong Saik)",
+      "success": true,
+      "summary": {
+        "responseType": "PUBLIC_TRANSPORT",
+        "hasInstructions": true,
+        "hasPolylines": true,
+        "instructionCount": 3,
+        "polylineCount": 3,
+        "transitSummary": {
+          "duration": 3199,
+          "walkTime": 1575,
+          "transitTime": 1624,
+          "waitingTime": 0,
+          "walkDistance": 1729.73,
+          "transfers": 0,
+          "fare": "2.02"
+        }
+      },
+      "instructionCount": 3,
+      "polylineCount": 3,
+      "sampleInstructions": [
+        {
+          "step": 1,
+          "type": "transit_walk",
+          "mode": "WALK",
+          "direction": "DEPART",
+          "streetName": "path",
+          "distance": 1143.09,
+          "coordinates": {
+            "lat": 1.4027655,
+            "lng": 103.8973792
+          },
+          "instruction": "DEPART on path for 1143.09m",
+          "absoluteDirection": "WEST",
+          "estimatedContext": {
+            "area": "Punggol/Sengkang",
+            "timeOfDay": "Off Peak",
+            "weatherNote": "Check weather conditions for outdoor segments"
+          }
+        },
+        {
+          "step": 2,
+          "type": "transit",
+          "mode": "SUBWAY",
+          "service": "NE",
+          "operator": "SBS Transit",
+          "distance": 15858.6,
+          "duration": 1624,
+          "coordinates": {
+            "lat": 1.4042876,
+            "lng": 103.9019468
+          },
+          "instruction": "Take NE from PUNGGOL MRT STATION to CHINATOWN MRT STATION",
+          "from": {
+            "name": "PUNGGOL MRT STATION",
+            "stopCode": "NE17",
+            "coordinates": {
+              "lat": 1.4042876,
+              "lng": 103.9019468
+            }
+          },
+          "to": {
+            "name": "CHINATOWN MRT STATION",
+            "stopCode": "NE4",
+            "coordinates": {
+              "lat": 1.2840949,
+              "lng": 103.8432502
+            }
+          },
+          "intermediateStops": [
+            {
+              "name": "SENGKANG MRT STATION",
+              "stopCode": "NE16",
+              "coordinates": {
+                "lat": 1.3916935,
+                "lng": 103.8954844
+              }
+            },
+            {
+              "name": "BUANGKOK MRT STATION",
+              "stopCode": "NE15",
+              "coordinates": {
+                "lat": 1.3829392,
+                "lng": 103.8932181
+              }
+            },
+            {
+              "name": "HOUGANG MRT STATION",
+              "stopCode": "NE14",
+              "coordinates": {
+                "lat": 1.3711572,
+                "lng": 103.8924725
+              }
+            },
+            {
+              "name": "KOVAN MRT STATION",
+              "stopCode": "NE13",
+              "coordinates": {
+                "lat": 1.3601096,
+                "lng": 103.8848699
+              }
+            },
+            {
+              "name": "SERANGOON MRT STATION",
+              "stopCode": "NE12",
+              "coordinates": {
+                "lat": 1.3496976,
+                "lng": 103.8735369
+              }
+            },
+            {
+              "name": "WOODLEIGH MRT STATION",
+              "stopCode": "NE11",
+              "coordinates": {
+                "lat": 1.3391963,
+                "lng": 103.8707544
+              }
+            },
+            {
+              "name": "POTONG PASIR MRT STATION",
+              "stopCode": "NE10",
+              "coordinates": {
+                "lat": 1.3312248,
+                "lng": 103.8690421
+              }
+            },
+            {
+              "name": "BOON KENG MRT STATION",
+              "stopCode": "NE9",
+              "coordinates": {
+                "lat": 1.3193357,
+                "lng": 103.8615695
+              }
+            },
+            {
+              "name": "FARRER PARK MRT STATION",
+              "stopCode": "NE8",
+              "coordinates": {
+                "lat": 1.3126039,
+                "lng": 103.854361
+              }
+            },
+            {
+              "name": "LITTLE INDIA MRT STATION",
+              "stopCode": "NE7",
+              "coordinates": {
+                "lat": 1.3067411,
+                "lng": 103.8496464
+              }
+            },
+            {
+              "name": "DHOBY GHAUT MRT STATION",
+              "stopCode": "NE6",
+              "coordinates": {
+                "lat": 1.2996206,
+                "lng": 103.8453759
+              }
+            },
+            {
+              "name": "CLARKE QUAY MRT STATION",
+              "stopCode": "NE5",
+              "coordinates": {
+                "lat": 1.2887102,
+                "lng": 103.8466109
+              }
+            }
+          ],
+          "estimatedContext": {
+            "area": "Punggol/Sengkang",
+            "timeOfDay": "Off Peak",
+            "weatherNote": "Check weather conditions for outdoor segments"
+          }
+        },
+        {
+          "step": 3,
+          "type": "transit_walk",
+          "mode": "WALK",
+          "direction": "DEPART",
+          "streetName": "path",
+          "distance": 586.67,
+          "coordinates": {
+            "lat": 1.284091,
+            "lng": 103.8432548
+          },
+          "instruction": "DEPART on path for 586.67m",
+          "absoluteDirection": "SOUTHWEST",
+          "estimatedContext": {
+            "area": "Chinatown/CBD",
+            "timeOfDay": "Off Peak",
+            "weatherNote": "Check weather conditions for outdoor segments"
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "Public Transport - Short Route (Novena to Toa Payoh)",
+      "success": true,
+      "summary": {
+        "responseType": "PUBLIC_TRANSPORT",
+        "hasInstructions": true,
+        "hasPolylines": true,
+        "instructionCount": 3,
+        "polylineCount": 3,
+        "transitSummary": {
+          "duration": 1063,
+          "walkTime": 524,
+          "transitTime": 539,
+          "waitingTime": 0,
+          "walkDistance": 553.62,
+          "transfers": 0,
+          "fare": "1.19"
+        }
+      },
+      "instructionCount": 3,
+      "polylineCount": 3,
+      "sampleInstructions": [
+        {
+          "step": 1,
+          "type": "transit_walk",
+          "mode": "WALK",
+          "direction": "DEPART",
+          "streetName": "path",
+          "distance": 449.17,
+          "coordinates": {
+            "lat": 1.3209015,
+            "lng": 103.8442314
+          },
+          "instruction": "DEPART on path for 449.17m",
+          "absoluteDirection": "NORTHEAST",
+          "estimatedContext": {
+            "area": "Novena/Toa Payoh",
+            "timeOfDay": "Off Peak",
+            "weatherNote": "Check weather conditions for outdoor segments"
+          }
+        },
+        {
+          "step": 2,
+          "type": "transit",
+          "mode": "BUS",
+          "service": "124",
+          "operator": "SBS Transit",
+          "distance": 2847.49,
+          "duration": 539,
+          "coordinates": {
+            "lat": 1.3187583,
+            "lng": 103.846555
+          },
+          "instruction": "Take 124 from REVIVAL CTR CH to ST. MICHAEL'S TER",
+          "from": {
+            "name": "REVIVAL CTR CH",
+            "stopCode": "50111",
+            "coordinates": {
+              "lat": 1.3187583,
+              "lng": 103.846555
+            }
+          },
+          "to": {
+            "name": "ST. MICHAEL'S TER",
+            "stopCode": "52499",
+            "coordinates": {
+              "lat": 1.3260376,
+              "lng": 103.8553721
+            }
+          },
+          "intermediateStops": [
+            {
+              "name": "NATL SKIN CTR",
+              "stopCode": "50121",
+              "coordinates": {
+                "lat": 1.319303,
+                "lng": 103.8493392
+              }
+            },
+            {
+              "name": "OPP BLK 104",
+              "stopCode": "50229",
+              "coordinates": {
+                "lat": 1.3209576,
+                "lng": 103.8528349
+              }
+            },
+            {
+              "name": "BLK 82",
+              "stopCode": "50991",
+              "coordinates": {
+                "lat": 1.3233799,
+                "lng": 103.8562615
+              }
+            },
+            {
+              "name": "BLK 29",
+              "stopCode": "52129",
+              "coordinates": {
+                "lat": 1.3254467,
+                "lng": 103.8593811
+              }
+            },
+            {
+              "name": "BET BLKS 33/34",
+              "stopCode": "52109",
+              "coordinates": {
+                "lat": 1.3269767,
+                "lng": 103.8581711
+              }
+            }
+          ],
+          "estimatedContext": {
+            "area": "Novena/Toa Payoh",
+            "timeOfDay": "Off Peak",
+            "weatherNote": "Check weather conditions for outdoor segments"
+          }
+        },
+        {
+          "step": 3,
+          "type": "transit_walk",
+          "mode": "WALK",
+          "direction": "DEPART",
+          "streetName": "path",
+          "distance": 104.46,
+          "coordinates": {
+            "lat": 1.3260375,
+            "lng": 103.8553721
+          },
+          "instruction": "DEPART on path for 104.46m",
+          "absoluteDirection": "NORTHEAST",
+          "estimatedContext": {
+            "area": "Novena/Toa Payoh",
+            "timeOfDay": "Off Peak",
+            "weatherNote": "Check weather conditions for outdoor segments"
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "Walking - Short Distance",
+      "success": true,
+      "summary": {
+        "responseType": "DIRECT_ROUTING",
+        "hasInstructions": true,
+        "hasPolylines": true,
+        "instructionCount": 2,
+        "polylineCount": 1,
+        "routeSummary": {
+          "totalTime": 3,
+          "totalDistance": 5,
+          "startPoint": "",
+          "endPoint": ""
+        }
+      },
+      "instructionCount": 2,
+      "polylineCount": 1,
+      "sampleInstructions": [
+        {
+          "step": 1,
+          "type": "direct",
+          "direction": "Left",
+          "streetName": "",
+          "distance": 5,
+          "coordinates": {
+            "lat": 1.319498,
+            "lng": 103.842141
+          },
+          "timeSeconds": 3,
+          "distanceFormatted": "5m",
+          "fromDirection": "East",
+          "toDirection": "North",
+          "mode": "walking",
+          "instruction": "Head East",
+          "estimatedContext": {
+            "area": "Novena/Toa Payoh",
+            "timeOfDay": "Off Peak",
+            "weatherNote": "Check weather conditions for outdoor segments"
+          }
+        },
+        {
+          "step": 2,
+          "type": "direct",
+          "direction": "Left",
+          "streetName": "",
+          "distance": 0,
+          "coordinates": {
+            "lat": 1.319502,
+            "lng": 103.842179
+          },
+          "timeSeconds": 0,
+          "distanceFormatted": "0m",
+          "fromDirection": "North",
+          "toDirection": "East",
+          "mode": "walking",
+          "instruction": "You Have Arrived At Your Destination, On The Left",
+          "estimatedContext": {
+            "area": "Novena/Toa Payoh",
+            "timeOfDay": "Off Peak",
+            "weatherNote": "Check weather conditions for outdoor segments"
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "Driving - Medium Distance (Thomson Road)",
+      "success": true,
+      "summary": {
+        "responseType": "DIRECT_ROUTING",
+        "hasInstructions": true,
+        "hasPolylines": true,
+        "instructionCount": 4,
+        "polylineCount": 1,
+        "routeSummary": {
+          "totalTime": 129,
+          "totalDistance": 991,
+          "startPoint": "THOMSON ROAD",
+          "endPoint": "THOMSON ROAD"
+        }
+      },
+      "instructionCount": 4,
+      "polylineCount": 1,
+      "sampleInstructions": [
+        {
+          "step": 1,
+          "type": "direct",
+          "direction": "Left",
+          "streetName": "THOMSON ROAD",
+          "distance": 34,
+          "coordinates": {
+            "lat": 1.32505,
+            "lng": 103.841685
+          },
+          "timeSeconds": 11,
+          "distanceFormatted": "34m",
+          "fromDirection": "East",
+          "toDirection": "North",
+          "mode": "driving",
+          "instruction": "Head East On Thomson Road",
+          "estimatedContext": {
+            "area": "Novena/Toa Payoh",
+            "timeOfDay": "Off Peak",
+            "weatherNote": "Check weather conditions for outdoor segments"
+          }
+        },
+        {
+          "step": 2,
+          "type": "direct",
+          "direction": "Left",
+          "streetName": "THOMSON ROAD",
+          "distance": 144,
+          "coordinates": {
+            "lat": 1.325062,
+            "lng": 103.841987
+          },
+          "timeSeconds": 17,
+          "distanceFormatted": "144m",
+          "fromDirection": "North",
+          "toDirection": "East",
+          "mode": "driving",
+          "instruction": "Turn Left To Stay On Thomson Road",
+          "estimatedContext": {
+            "area": "Novena/Toa Payoh",
+            "timeOfDay": "Off Peak",
+            "weatherNote": "Check weather conditions for outdoor segments"
+          }
+        },
+        {
+          "step": 3,
+          "type": "direct",
+          "direction": "Uturn",
+          "streetName": "THOMSON ROAD",
+          "distance": 813,
+          "coordinates": {
+            "lat": 1.326342,
+            "lng": 103.841838
+          },
+          "timeSeconds": 102,
+          "distanceFormatted": "813m",
+          "fromDirection": "North",
+          "toDirection": "North",
+          "mode": "driving",
+          "instruction": "Make A U-turn And Continue On Thomson Road",
+          "estimatedContext": {
+            "area": "Novena/Toa Payoh",
+            "timeOfDay": "Off Peak",
+            "weatherNote": "Check weather conditions for outdoor segments"
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "Cycling - Recreational Route",
+      "success": true,
+      "summary": {
+        "responseType": "DIRECT_ROUTING",
+        "hasInstructions": true,
+        "hasPolylines": true,
+        "instructionCount": 185,
+        "polylineCount": 1,
+        "routeSummary": {
+          "totalTime": 13021,
+          "totalDistance": 35178,
+          "startPoint": "KENT RIDGE ROAD",
+          "endPoint": "WINDSOR PARK ROAD"
+        }
+      },
+      "instructionCount": 185,
+      "polylineCount": 1,
+      "sampleInstructions": [
+        {
+          "step": 1,
+          "type": "direct",
+          "direction": "Left",
+          "streetName": "KENT RIDGE ROAD",
+          "distance": 309,
+          "coordinates": {
+            "lat": 1.296099,
+            "lng": 103.775863
+          },
+          "timeSeconds": 112,
+          "distanceFormatted": "309m",
+          "fromDirection": "South East",
+          "toDirection": "North",
+          "mode": "cycling",
+          "instruction": "Head Southeast On Kent Ridge Road",
+          "estimatedContext": {
+            "area": "Jurong",
+            "timeOfDay": "Off Peak",
+            "weatherNote": "Check weather conditions for outdoor segments"
+          }
+        },
+        {
+          "step": 2,
+          "type": "direct",
+          "direction": "Slight Left",
+          "streetName": "KENT RIDGE ROAD",
+          "distance": 769,
+          "coordinates": {
+            "lat": 1.294805,
+            "lng": 103.778081
+          },
+          "timeSeconds": 282,
+          "distanceFormatted": "769m",
+          "fromDirection": "East",
+          "toDirection": "South East",
+          "mode": "cycling",
+          "instruction": "Make A Slight Left To Stay On Kent Ridge Road",
+          "estimatedContext": {
+            "area": "Jurong",
+            "timeOfDay": "Off Peak",
+            "weatherNote": "Check weather conditions for outdoor segments"
+          }
+        },
+        {
+          "step": 3,
+          "type": "direct",
+          "direction": "Left",
+          "streetName": "SOUTH BUONA VISTA ROAD",
+          "distance": 96,
+          "coordinates": {
+            "lat": 1.29154,
+            "lng": 103.783568
+          },
+          "timeSeconds": 39,
+          "distanceFormatted": "96m",
+          "fromDirection": "North East",
+          "toDirection": "South East",
+          "mode": "cycling",
+          "instruction": "Turn Left Onto South Buona Vista Road",
+          "estimatedContext": {
+            "area": "Jurong",
+            "timeOfDay": "Off Peak",
+            "weatherNote": "Check weather conditions for outdoor segments"
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "Public Transport - BUS Mode Only",
+      "success": true,
+      "summary": {
+        "responseType": "PUBLIC_TRANSPORT",
+        "hasInstructions": true,
+        "hasPolylines": true,
+        "instructionCount": 3,
+        "polylineCount": 3,
+        "transitSummary": {
+          "duration": 1063,
+          "walkTime": 524,
+          "transitTime": 539,
+          "waitingTime": 0,
+          "walkDistance": 553.62,
+          "transfers": 0,
+          "fare": "1.19"
+        }
+      },
+      "instructionCount": 3,
+      "polylineCount": 3,
+      "sampleInstructions": [
+        {
+          "step": 1,
+          "type": "transit_walk",
+          "mode": "WALK",
+          "direction": "DEPART",
+          "streetName": "path",
+          "distance": 449.17,
+          "coordinates": {
+            "lat": 1.3209015,
+            "lng": 103.8442314
+          },
+          "instruction": "DEPART on path for 449.17m",
+          "absoluteDirection": "NORTHEAST",
+          "estimatedContext": {
+            "area": "Novena/Toa Payoh",
+            "timeOfDay": "Off Peak",
+            "weatherNote": "Check weather conditions for outdoor segments"
+          }
+        },
+        {
+          "step": 2,
+          "type": "transit",
+          "mode": "BUS",
+          "service": "124",
+          "operator": "SBS Transit",
+          "distance": 2847.49,
+          "duration": 539,
+          "coordinates": {
+            "lat": 1.3187583,
+            "lng": 103.846555
+          },
+          "instruction": "Take 124 from REVIVAL CTR CH to ST. MICHAEL'S TER",
+          "from": {
+            "name": "REVIVAL CTR CH",
+            "stopCode": "50111",
+            "coordinates": {
+              "lat": 1.3187583,
+              "lng": 103.846555
+            }
+          },
+          "to": {
+            "name": "ST. MICHAEL'S TER",
+            "stopCode": "52499",
+            "coordinates": {
+              "lat": 1.3260376,
+              "lng": 103.8553721
+            }
+          },
+          "intermediateStops": [
+            {
+              "name": "NATL SKIN CTR",
+              "stopCode": "50121",
+              "coordinates": {
+                "lat": 1.319303,
+                "lng": 103.8493392
+              }
+            },
+            {
+              "name": "OPP BLK 104",
+              "stopCode": "50229",
+              "coordinates": {
+                "lat": 1.3209576,
+                "lng": 103.8528349
+              }
+            },
+            {
+              "name": "BLK 82",
+              "stopCode": "50991",
+              "coordinates": {
+                "lat": 1.3233799,
+                "lng": 103.8562615
+              }
+            },
+            {
+              "name": "BLK 29",
+              "stopCode": "52129",
+              "coordinates": {
+                "lat": 1.3254467,
+                "lng": 103.8593811
+              }
+            },
+            {
+              "name": "BET BLKS 33/34",
+              "stopCode": "52109",
+              "coordinates": {
+                "lat": 1.3269767,
+                "lng": 103.8581711
+              }
+            }
+          ],
+          "estimatedContext": {
+            "area": "Novena/Toa Payoh",
+            "timeOfDay": "Off Peak",
+            "weatherNote": "Check weather conditions for outdoor segments"
+          }
+        },
+        {
+          "step": 3,
+          "type": "transit_walk",
+          "mode": "WALK",
+          "direction": "DEPART",
+          "streetName": "path",
+          "distance": 104.46,
+          "coordinates": {
+            "lat": 1.3260375,
+            "lng": 103.8553721
+          },
+          "instruction": "DEPART on path for 104.46m",
+          "absoluteDirection": "NORTHEAST",
+          "estimatedContext": {
+            "area": "Novena/Toa Payoh",
+            "timeOfDay": "Off Peak",
+            "weatherNote": "Check weather conditions for outdoor segments"
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "Public Transport - RAIL Mode Only",
+      "success": true,
+      "summary": {
+        "responseType": "PUBLIC_TRANSPORT",
+        "hasInstructions": true,
+        "hasPolylines": true,
+        "instructionCount": 3,
+        "polylineCount": 3,
+        "transitSummary": {
+          "duration": 1677,
+          "walkTime": 1560,
+          "transitTime": 117,
+          "waitingTime": 0,
+          "walkDistance": 1600.58,
+          "transfers": 0,
+          "fare": "1.19"
+        }
+      },
+      "instructionCount": 3,
+      "polylineCount": 3,
+      "sampleInstructions": [
+        {
+          "step": 1,
+          "type": "transit_walk",
+          "mode": "WALK",
+          "direction": "DEPART",
+          "streetName": "path",
+          "distance": 69.61,
+          "coordinates": {
+            "lat": 1.3209015,
+            "lng": 103.8442314
+          },
+          "instruction": "DEPART on path for 69.61m",
+          "absoluteDirection": "SOUTHWEST",
+          "estimatedContext": {
+            "area": "Novena/Toa Payoh",
+            "timeOfDay": "Off Peak",
+            "weatherNote": "Check weather conditions for outdoor segments"
+          }
+        },
+        {
+          "step": 2,
+          "type": "transit",
+          "mode": "SUBWAY",
+          "service": "NS",
+          "operator": "SMRT Corporation",
+          "distance": 1449.74,
+          "duration": 117,
+          "coordinates": {
+            "lat": 1.3204584,
+            "lng": 103.8438426
+          },
+          "instruction": "Take NS from NOVENA MRT STATION to TOA PAYOH MRT STATION",
+          "from": {
+            "name": "NOVENA MRT STATION",
+            "stopCode": "NS20",
+            "coordinates": {
+              "lat": 1.3204584,
+              "lng": 103.8438426
+            }
+          },
+          "to": {
+            "name": "TOA PAYOH MRT STATION",
+            "stopCode": "NS19",
+            "coordinates": {
+              "lat": 1.3324629,
+              "lng": 103.8475893
+            }
+          },
+          "intermediateStops": [],
+          "estimatedContext": {
+            "area": "Novena/Toa Payoh",
+            "timeOfDay": "Off Peak",
+            "weatherNote": "Check weather conditions for outdoor segments"
+          }
+        },
+        {
+          "step": 3,
+          "type": "transit_walk",
+          "mode": "WALK",
+          "direction": "DEPART",
+          "streetName": "path",
+          "distance": 1531.06,
+          "coordinates": {
+            "lat": 1.3324628,
+            "lng": 103.8475893
+          },
+          "instruction": "DEPART on path for 1531.06m",
+          "absoluteDirection": "SOUTHWEST",
+          "estimatedContext": {
+            "area": "Singapore",
+            "timeOfDay": "Off Peak",
+            "weatherNote": "Check weather conditions for outdoor segments"
+          }
+        }
+      ]
+    }
+  ]
+}

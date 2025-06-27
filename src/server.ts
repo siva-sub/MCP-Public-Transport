@@ -15,6 +15,7 @@ import { BusStopSearchTool } from './tools/bus/search.js';
 import { BusStopDetailsTool } from './tools/bus/details.js';
 import { TrainStatusTool } from './tools/train/status.js';
 import { JourneyPlanningTool } from './tools/routing/journey.js';
+import { ComprehensiveJourneyTool } from './tools/routing/comprehensive.js';
 import { TaxiAvailabilityTool } from './tools/taxi/availability.js';
 import { LocationSearchTool } from './tools/location/search.js';
 import { WeatherConditionsTool } from './tools/weather/conditions.js';
@@ -62,6 +63,7 @@ export class SingaporeTransportServer {
       new BusStopDetailsTool(this.ltaService, this.oneMapService),
       new TrainStatusTool(this.ltaService),
       new JourneyPlanningTool(this.oneMapService, this.ltaService),
+      new ComprehensiveJourneyTool(this.oneMapService, this.ltaService, weatherService),
       new TaxiAvailabilityTool(this.ltaService, this.oneMapService),
       new LocationSearchTool(this.oneMapService, postalCodeService, timeService, fuzzySearchService),
       new WeatherConditionsTool(weatherService),

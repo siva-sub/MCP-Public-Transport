@@ -431,6 +431,10 @@ export class JourneyPlanningTool extends BaseTool {
           });
           return result;
         }
+        
+        // If no result but no error, log and continue to next attempt
+        logger.debug(`No route found on attempt ${attempt}, will retry`);
+        
       } catch (error) {
         logger.warn(`Route planning attempt ${attempt} failed`, { 
           error: error instanceof Error ? error.message : 'Unknown error',
@@ -438,17 +442,23 @@ export class JourneyPlanningTool extends BaseTool {
           retries 
         });
         
-        if (attempt === retries) {
-          // Try alternative routing strategies on final attempt
-          logger.info('Trying alternative routing strategies');
-          return await this.tryAlternativeRouting(from, to, options);
+        // If it's an authentication error, don't retry immediately
+        if ((error as any)?.response?.status === 401) {
+          logger.warn('Authentication error detected, will retry after delay');
+          await new Promise(resolve => setTimeout(resolve, 2000));
         }
-        
-        // Wait before retry with exponential backoff
-        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
-        logger.debug(`Waiting ${delay}ms before retry`);
-        await new Promise(resolve => setTimeout(resolve, delay));
       }
+      
+      // Try alternative routing strategies on final attempt
+      if (attempt === retries) {
+        logger.info('Trying alternative routing strategies');
+        return await this.tryAlternativeRouting(from, to, options);
+      }
+      
+      // Wait before retry with exponential backoff
+      const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+      logger.debug(`Waiting ${delay}ms before retry`);
+      await new Promise(resolve => setTimeout(resolve, delay));
     }
     
     return null;

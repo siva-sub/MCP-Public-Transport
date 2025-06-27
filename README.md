@@ -103,11 +103,12 @@ Add to your `claude_desktop_config.json`:
   - Accessibility details and location context
   - Walking distances to nearby stops
 
-- **`plan_optimal_journey`** ⭐ - Weather-aware multi-modal routing
+- **`plan_comprehensive_journey`** ⭐ - Complete multi-modal journey planning
   - Transfer minimization algorithms
   - Real-time disruption handling
   - Google Maps-quality turn-by-turn directions
   - Weather impact on walking segments
+  - Supports all input types: addresses, postal codes, coordinates
 
 ### 🌍 Location Intelligence
 - **`search_location`** - Enhanced with fuzzy search capabilities

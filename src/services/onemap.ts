@@ -325,41 +325,57 @@ export class OneMapService {
 
       const routeType = this.mapModeToRouteType(options.mode || 'PUBLIC_TRANSPORT');
       
+      // Properly encode coordinates for URL
       const params: any = {
-        start: `${from.latitude},${from.longitude}`,
-        end: `${to.latitude},${to.longitude}`,
+        start: encodeURIComponent(`${from.latitude},${from.longitude}`),
+        end: encodeURIComponent(`${to.latitude},${to.longitude}`),
         routeType,
-        token,
       };
 
       // Add mode-specific parameters
       if (options.mode === 'PUBLIC_TRANSPORT') {
         params.mode = 'TRANSIT';
-        params.maxWalkDistance = options.maxWalkDistance || 1000;
+        params.maxWalkDistance = (options.maxWalkDistance || 1000).toString();
+        params.numItineraries = (options.numItineraries || 3).toString();
         
         // Add time parameters for PT
         const now = new Date();
         if (options.departureTime) {
           params.date = this.formatDateForOneMap(options.departureTime);
           params.time = this.formatTimeForOneMap(options.departureTime);
-          params.arriveBy = 'false';
         } else {
           params.date = this.formatDateForOneMap(now);
           params.time = this.formatTimeForOneMap(now);
-          params.arriveBy = 'false';
         }
       }
 
-      // Use the correct endpoint based on the API documentation
-      const routingUrl = 'https://developers.onemap.sg/privateapi/routingsvc/route';
+      // Use the correct public API endpoint
+      const routingUrl = 'https://www.onemap.gov.sg/api/public/routingsvc/route';
       
-      // Make request with token as parameter (not header) using direct axios call
+      logger.debug('Making OneMap routing request', { 
+        url: routingUrl, 
+        params,
+        mode: options.mode 
+      });
+      
+      // Make request with Bearer token in Authorization header
       const response = await axios.get<OneMapRouteResponse>(routingUrl, { 
         params,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
         timeout: this.timeout,
       });
       
-      // Check response status
+      logger.debug('OneMap routing response received', { 
+        status: response.status,
+        hasData: !!response.data,
+        hasPlan: !!response.data.plan,
+        hasInstructions: !!response.data.route_instructions 
+      });
+      
+      // Check response status for direct routing (walk/drive)
       if (response.data.status !== undefined && response.data.status !== 0) {
         logger.warn('OneMap routing failed', { 
           status: response.data.status, 
@@ -371,13 +387,34 @@ export class OneMapService {
 
       // Check if we have a valid response
       if (!response.data.plan?.itineraries?.length && !response.data.route_instructions) {
-        logger.warn('No route found', { from, to, params });
+        logger.warn('No route found in response', { 
+          from: from.name, 
+          to: to.name, 
+          params,
+          responseKeys: Object.keys(response.data)
+        });
         return null;
       }
 
       return this.formatRouteResponse(response.data);
     } catch (error) {
-      logger.error('Route planning failed', error);
+      logger.error('Route planning failed', { 
+        error: error instanceof Error ? error.message : 'Unknown error',
+        from: from.name,
+        to: to.name,
+        mode: options.mode,
+        status: (error as any)?.response?.status,
+        statusText: (error as any)?.response?.statusText,
+        responseData: (error as any)?.response?.data
+      });
+      
+      // Handle specific error cases
+      if ((error as any)?.response?.status === 401) {
+        logger.warn('Authentication failed, token may be expired');
+        // Clear token cache to force refresh on next request
+        this.tokenCache = null;
+      }
+      
       return null;
     }
   }

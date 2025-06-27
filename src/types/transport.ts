@@ -80,6 +80,7 @@ export interface JourneyPlan {
 export interface TaxiAvailability {
   coordinates: [number, number];
   timestamp: string;
+  taxiCount: number; // Add taxiCount for consistency
 }
 
 export interface TrafficIncident {

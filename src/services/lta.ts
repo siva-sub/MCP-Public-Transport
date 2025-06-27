@@ -16,7 +16,7 @@ import {
 } from '../types/api.js';
 
 export class LTAService {
-  private client: AxiosInstance;
+  protected client: AxiosInstance; // Changed to protected
   private readonly baseUrl = 'https://datamall2.mytransport.sg/ltaodataservice';
 
   constructor(
@@ -165,6 +165,7 @@ export class LTAService {
       return response.data.value.map((taxi: any): TaxiAvailability => ({
         coordinates: [taxi.Latitude, taxi.Longitude],
         timestamp: taxi.Timestamp,
+        taxiCount: taxi.NoOfTaxis, // Map NoOfTaxis to taxiCount
       }));
     }, 30); // 30 second cache
   }

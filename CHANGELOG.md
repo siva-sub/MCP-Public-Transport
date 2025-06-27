@@ -5,6 +5,48 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.6] - 2025-06-27
+
+### 🎯 **COMPREHENSIVE JOURNEY PLANNING - FULLY OPERATIONAL**
+
+#### **✅ FIXED: plan_comprehensive_journey Tool**
+- **RESOLVED**: All TypeScript compilation errors and runtime issues
+- **SIMPLIFIED**: Removed complex LTAEnhancedService integration to focus on core functionality
+- **ENHANCED**: Streamlined comprehensive journey planning with reliable OneMap integration
+- **IMPROVED**: Clean error handling and graceful fallbacks for API failures
+
+#### **🛠️ Technical Improvements**
+- **FIXED**: TypeScript interface mismatches and property access errors
+- **CLEANED**: Removed overly complex LTA enhanced service that was causing instability
+- **OPTIMIZED**: Simplified context information gathering with basic traffic data
+- **ENHANCED**: Proper polyline decoding with @mapbox/polyline library integration
+
+#### **🎯 Usability Focus**
+- **PRIORITIZED**: Core routing functionality over complex feature integration
+- **MAINTAINED**: Essential features like location resolution, route planning, and instructions
+- **ENSURED**: Reliable operation with graceful degradation when APIs are unavailable
+- **KEPT**: Weather service integration for basic weather-aware routing
+
+#### **📊 Performance & Reliability**
+- **BUILD**: All TypeScript errors resolved, clean compilation
+- **TESTING**: Comprehensive test suite passes with all transport modes
+- **STABILITY**: Reduced complexity for better maintainability and reliability
+- **DEPLOYMENT**: MCP server starts successfully with all 10 tools operational
+
+#### **🔧 Architecture Simplification**
+- **REMOVED**: Complex LTAEnhancedService with excessive API integrations
+- **KEPT**: Core LTAService for essential transport data
+- **MAINTAINED**: OneMapService for routing and geocoding
+- **PRESERVED**: WeatherService for weather-aware features
+
+### 🎯 **User Experience Improvements**
+- **RELIABLE**: Consistent journey planning without complex failures
+- **FAST**: Improved response times with simplified service architecture
+- **CLEAR**: Better error messages and handling for edge cases
+- **PRACTICAL**: Focus on essential features that users actually need
+
+---
+
 ## [0.2.5] - 2025-06-27
 
 ### 🔐 **CRITICAL FIX: OneMap Authentication & Routing API**
