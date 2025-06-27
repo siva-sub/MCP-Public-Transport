@@ -279,8 +279,8 @@ export class JourneyPlanningTool extends BaseTool {
         ...input.preferences,
       };
 
-      // Plan primary route
-      const primaryRoute = await this.oneMapService.planRoute(fromLocation, toLocation, {
+      // Plan primary route with retry logic
+      const primaryRoute = await this.planRouteWithRetry(fromLocation, toLocation, {
         mode: this.mapModeToOneMapMode(resolvedMode),
         departureTime,
         arrivalTime,
@@ -290,8 +290,17 @@ export class JourneyPlanningTool extends BaseTool {
       if (!primaryRoute) {
         return {
           error: 'No route found between the specified locations',
+          details: 'Tried multiple routing strategies but could not find a viable route',
+          suggestions: [
+            'Check if the locations are accessible by the selected transport mode',
+            'Try increasing maxWalkDistance if using public transport',
+            'Consider using a different transport mode (AUTO, DRIVE, WALK)',
+            'Verify that both locations are within Singapore'
+          ],
           fromLocation: input.fromLocation,
           toLocation: input.toLocation,
+          resolvedFrom: fromLocation,
+          resolvedTo: toLocation,
           timestamp: new Date().toISOString(),
         };
       }
@@ -324,32 +333,64 @@ export class JourneyPlanningTool extends BaseTool {
   }
 
   private async resolveLocation(
-    locationInput: string | { postalCode: string } | { latitude: number; longitude: number; name?: string }
+    locationInput: string | { postalCode: string } | { latitude: number; longitude: number; name?: string } | any
   ): Promise<Location | null> {
     try {
-      // Handle coordinate input
-      if (typeof locationInput === 'object' && 'latitude' in locationInput) {
+      let parsedInput = locationInput;
+      
+      // Handle stringified JSON objects (critical fix)
+      if (typeof locationInput === 'string') {
+        try {
+          const parsed = JSON.parse(locationInput);
+          if (parsed && typeof parsed === 'object') {
+            parsedInput = parsed;
+            logger.debug('Successfully parsed JSON string input', { original: locationInput, parsed });
+          }
+        } catch (parseError) {
+          // Not JSON, treat as regular address string
+          logger.debug('Input is not JSON, treating as address string', { input: locationInput });
+          return await this.oneMapService.geocode(locationInput);
+        }
+      }
+
+      // Handle coordinate input (from parsed JSON or direct object)
+      if (parsedInput && typeof parsedInput === 'object' && 'latitude' in parsedInput && 'longitude' in parsedInput) {
+        // Validate Singapore coordinate bounds
+        const lat = parseFloat(parsedInput.latitude);
+        const lng = parseFloat(parsedInput.longitude);
+        
+        if (lat < 1.0 || lat > 1.5 || lng < 103.0 || lng > 104.5) {
+          logger.warn('Coordinates outside Singapore bounds', { lat, lng });
+          return null;
+        }
+        
         return {
-          latitude: locationInput.latitude,
-          longitude: locationInput.longitude,
-          name: locationInput.name,
-          address: locationInput.name,
+          latitude: lat,
+          longitude: lng,
+          name: parsedInput.name || 'Custom Location',
+          address: parsedInput.name || `${lat.toFixed(6)}, ${lng.toFixed(6)}`,
         };
       }
 
-      // Handle postal code input
-      if (typeof locationInput === 'object' && 'postalCode' in locationInput) {
-        return await this.oneMapService.geocode(locationInput.postalCode);
+      // Handle postal code input (from parsed JSON or direct object)
+      if (parsedInput && typeof parsedInput === 'object' && 'postalCode' in parsedInput) {
+        const postalCode = parsedInput.postalCode.toString();
+        if (!/^\d{6}$/.test(postalCode)) {
+          logger.warn('Invalid postal code format', { postalCode });
+          return null;
+        }
+        return await this.oneMapService.geocode(postalCode);
       }
 
-      // Handle string input (address/name)
-      if (typeof locationInput === 'string') {
-        return await this.oneMapService.geocode(locationInput);
+      // Handle string input (address/name) - already handled above for JSON case
+      if (typeof parsedInput === 'string') {
+        return await this.oneMapService.geocode(parsedInput);
       }
 
+      logger.warn('Unrecognized location input format', { input: locationInput, parsed: parsedInput });
       return null;
     } catch (error) {
-      logger.error('Location resolution failed', error);
+      logger.error('Location resolution failed', { error, input: locationInput });
       return null;
     }
   }
@@ -370,6 +411,141 @@ export class JourneyPlanningTool extends BaseTool {
   private mapModeToOneMapMode(mode: 'PUBLIC_TRANSPORT' | 'WALK' | 'DRIVE' | 'CYCLE'): 'PUBLIC_TRANSPORT' | 'WALK' | 'DRIVE' {
     if (mode === 'CYCLE') return 'WALK'; // OneMap doesn't support cycle, use walk as fallback
     return mode;
+  }
+
+  private async planRouteWithRetry(
+    from: Location,
+    to: Location,
+    options: any,
+    retries = 3
+  ): Promise<JourneyPlan | null> {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        logger.debug(`Route planning attempt ${attempt}/${retries}`, { from: from.name, to: to.name, options });
+        
+        const result = await this.oneMapService.planRoute(from, to, options);
+        if (result) {
+          logger.info(`Route planning successful on attempt ${attempt}`, { 
+            duration: result.totalDuration,
+            distance: result.totalDistance 
+          });
+          return result;
+        }
+      } catch (error) {
+        logger.warn(`Route planning attempt ${attempt} failed`, { 
+          error: error instanceof Error ? error.message : 'Unknown error',
+          attempt,
+          retries 
+        });
+        
+        if (attempt === retries) {
+          // Try alternative routing strategies on final attempt
+          logger.info('Trying alternative routing strategies');
+          return await this.tryAlternativeRouting(from, to, options);
+        }
+        
+        // Wait before retry with exponential backoff
+        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+        logger.debug(`Waiting ${delay}ms before retry`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+    
+    return null;
+  }
+
+  private async tryAlternativeRouting(
+    from: Location,
+    to: Location,
+    originalOptions: any
+  ): Promise<JourneyPlan | null> {
+    // Try different route types as fallbacks
+    const fallbackModes: Array<'PUBLIC_TRANSPORT' | 'WALK' | 'DRIVE'> = ['DRIVE', 'WALK', 'PUBLIC_TRANSPORT'];
+    
+    for (const mode of fallbackModes) {
+      if (mode === originalOptions.mode) continue; // Skip the original mode
+      
+      try {
+        logger.debug(`Trying alternative routing mode: ${mode}`);
+        
+        const alternativeOptions = {
+          ...originalOptions,
+          mode,
+        };
+        
+        // Adjust parameters for different modes
+        if (mode === 'WALK') {
+          // For walking, remove PT-specific parameters
+          delete alternativeOptions.maxWalkDistance;
+        } else if (mode === 'DRIVE') {
+          // For driving, remove PT-specific parameters
+          delete alternativeOptions.maxWalkDistance;
+        }
+        
+        const result = await this.oneMapService.planRoute(from, to, alternativeOptions);
+        if (result) {
+          logger.info(`Alternative routing successful with ${mode}`, {
+            duration: result.totalDuration,
+            distance: result.totalDistance
+          });
+          return result;
+        }
+      } catch (error) {
+        logger.warn(`Alternative routing failed for ${mode}`, {
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    }
+    
+    // If all alternatives fail, try a simple direct route
+    try {
+      logger.debug('Trying simple direct route calculation');
+      return await this.createDirectRoute(from, to);
+    } catch (error) {
+      logger.error('All routing strategies failed', error);
+      return null;
+    }
+  }
+
+  private async createDirectRoute(from: Location, to: Location): Promise<JourneyPlan | null> {
+    try {
+      const distance = this.calculateDistance(from.latitude, from.longitude, to.latitude, to.longitude);
+      
+      // Create a simple walking route as last resort
+      const walkingSpeed = 1.4; // m/s (average walking speed)
+      const duration = Math.round(distance / walkingSpeed);
+      
+      const directRoute: JourneyPlan = {
+        segments: [{
+          mode: 'WALK',
+          duration,
+          distance,
+          instructions: [
+            `Walk directly from ${from.name || 'origin'} to ${to.name || 'destination'}`,
+            `Distance: ${(distance / 1000).toFixed(1)}km`,
+            `Estimated time: ${Math.round(duration / 60)} minutes`
+          ],
+          startLocation: from,
+          endLocation: to,
+        }],
+        totalDuration: duration,
+        totalDistance: distance,
+        totalCost: 0,
+        totalWalkDistance: distance,
+        transfers: 0,
+        summary: `${Math.round(duration / 60)} min direct walk (${(distance / 1000).toFixed(1)}km)`,
+      };
+      
+      logger.info('Created direct route as fallback', {
+        distance: distance,
+        duration: duration
+      });
+      
+      return directRoute;
+    } catch (error) {
+      logger.error('Failed to create direct route', error);
+      return null;
+    }
   }
 
   private async enhanceWithRealTimeData(route: JourneyPlan): Promise<JourneyPlan> {

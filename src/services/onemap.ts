@@ -104,7 +104,7 @@ export class OneMapService {
     private email?: string,
     private password?: string,
     private cache?: CacheService,
-    private timeout: number = 5000
+    private timeout: number = 30000 // Increased from 5000 to 30000 (30 seconds)
   ) {
     this.client = axios.create({
       baseURL: this.baseUrl,
