@@ -18,6 +18,7 @@ import { JourneyPlanningTool } from './tools/routing/journey.js';
 import { EnhancedJourneyPlanningTool } from './tools/routing/enhanced.js';
 import { TaxiAvailabilityTool } from './tools/taxi/availability.js';
 import { LocationSearchTool } from './tools/location/search.js';
+import { WeatherConditionsTool } from './tools/weather/conditions.js';
 
 // Import enhanced services
 import { PostalCodeService } from './services/postalCode.js';
@@ -72,6 +73,7 @@ export class SingaporeTransportServer {
       new EnhancedJourneyPlanningTool(enhancedRoutingService),
       new TaxiAvailabilityTool(this.ltaService, this.oneMapService),
       new LocationSearchTool(this.oneMapService, postalCodeService, timeService, fuzzySearchService),
+      new WeatherConditionsTool(weatherService),
     ];
 
     // Get all tool definitions

@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2025-06-27
+
+### 🌦️ Weather Tools Added
+
+#### Standalone Weather Intelligence
+- **NEW TOOL**: `get_weather_conditions` - Comprehensive real-time weather with travel impact
+  - Real-time temperature, rainfall, humidity, and wind data
+  - Comfort level analysis (comfortable/warm/hot/humid/uncomfortable)
+  - Travel impact assessment with walking condition ratings
+  - Time adjustment recommendations based on weather
+  - Activity-specific recommendations
+
+- **NEW TOOL**: `get_weather_advisory` - Activity-specific weather recommendations
+  - Tailored advice for walking, cycling, outdoor dining, sports, photography
+  - Suitability ratings (excellent/good/fair/poor/not_recommended)
+  - Best time recommendations for activities
+  - Weather-specific safety advice
+
+#### Enhanced Weather Features
+- **Comfort Analysis**: Intelligent comfort level assessment combining temperature, humidity, and rainfall
+- **Activity Recommendations**: Specific guidance for different outdoor activities
+- **Travel Impact**: Walking condition ratings with time multipliers
+- **Safety Advisories**: Weather-based safety recommendations and precautions
+
+### 📊 Updated Statistics
+- **Total Tools**: 13 tools (up from 11)
+- **New Weather Tools**: 2 comprehensive weather analysis tools
+- **Activity Types**: 6 different activity-specific recommendations
+- **Weather Parameters**: 4 real-time weather measurements
+
+---
+
 ## [0.2.0] - 2025-06-27
 
 ### 🚀 Major Features Added

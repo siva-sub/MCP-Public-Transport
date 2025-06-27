@@ -8,6 +8,12 @@ What began as an experiment with MCP integration evolved into a sophisticated, r
 
 ## 🌟 Key Features
 
+### 🎯 **NEW in v0.2.1** - Weather Intelligence
+- 🌦️ **Standalone Weather Tools** - Comprehensive weather conditions and activity-specific advisories
+- 🎯 **Activity Recommendations** - Tailored advice for walking, cycling, sports, photography, dining
+- 🌡️ **Comfort Analysis** - Intelligent comfort level assessment with travel impact
+- ⏰ **Best Time Recommendations** - Optimal timing for outdoor activities based on weather
+
 ### 🎯 **NEW in v0.2.0** - Enhanced Intelligence
 - 🔍 **Advanced Fuzzy Search** - "Opp Blk 910" → finds "Opposite Block 910" with 95% accuracy
 - 🌦️ **Weather-Aware Routing** - Real-time weather impact on walking times and route suggestions
@@ -121,6 +127,18 @@ Add to your `claude_desktop_config.json`:
 
 ### 🚦 Traffic & Roads
 - **`get_traffic_conditions`** - Live traffic conditions, incidents, and road speeds
+
+### 🌦️ **NEW** - Weather Intelligence
+- **`get_weather_conditions`** ⭐ - Comprehensive real-time weather with travel impact
+  - Real-time temperature, rainfall, humidity, and wind data
+  - Comfort level analysis and walking condition ratings
+  - Travel impact assessment with time adjustments
+  - Activity-specific recommendations and safety advice
+
+- **`get_weather_advisory`** ⭐ - Activity-specific weather recommendations
+  - Tailored advice for walking, cycling, outdoor dining, sports, photography
+  - Suitability ratings and best time recommendations
+  - Weather-specific safety guidance and precautions
 
 ## 📊 Enterprise Features
 
