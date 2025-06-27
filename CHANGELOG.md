@@ -5,6 +5,77 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.3] - 2025-06-27
+
+### 🚀 **Unified Journey Planning Tool - Complete Overhaul**
+
+#### **✅ FIXED: Postal Code Support**
+- **RESOLVED**: `plan_optimal_journey` failing with postal code inputs like `{"postalCode": "828770"}`
+- **NEW**: `plan_comprehensive_journey` now supports multiple input types:
+  - **String addresses**: `"Orchard MRT"`, `"Marina Bay Sands"`
+  - **Postal codes**: `{"postalCode": "828770"}`, `{"postalCode": "531981"}`
+  - **Coordinates**: `{"latitude": 1.4027, "longitude": 103.8974, "name": "Optional"}`
+
+#### **🛠️ Enhanced OneMap API Integration**
+- **IMPLEMENTED**: Proper OneMap routing API following official documentation
+- **ADDED**: Support for all OneMap route types:
+  - `pt` (Public Transport) with TRANSIT, BUS, RAIL modes
+  - `drive` (Driving/Taxi) with detailed turn-by-turn instructions
+  - `walk` (Walking) with street-level navigation
+  - `cycle` (Cycling) with fallback to walking mode
+- **ENHANCED**: Authentication flow with proper token management (3-day TTL)
+
+#### **📍 Google Maps-Quality Instructions**
+- **IMPLEMENTED**: Detailed turn-by-turn directions from OneMap API:
+  - `"Head East On Thomson Road"`
+  - `"Turn Left To Stay On Thomson Road"`
+  - `"Make A U-turn And Continue On Thomson Road"`
+  - `"You Have Arrived At Your Destination, On The Left"`
+- **FIXED**: Generic "DEPART on path for 1143.09m" replaced with street names
+- **ENHANCED**: Proper coordinate parsing from OneMap responses
+
+#### **🎯 Smart Mode Selection**
+- **NEW**: `AUTO` mode intelligently selects optimal transport:
+  - **Walking**: Distances under 1km
+  - **Public Transport**: Medium distances (1-15km)
+  - **Driving**: Long distances over 15km
+- **ENHANCED**: Weather-aware routing with walking time adjustments
+- **IMPROVED**: Transfer minimization and cost optimization
+
+#### **🔧 Architecture Improvements**
+- **REMOVED**: Broken `plan_optimal_journey` tool and `EnhancedRoutingService`
+- **UNIFIED**: Single working `plan_comprehensive_journey` tool with all features
+- **SIMPLIFIED**: Direct OneMap service integration without middleware layers
+- **ENHANCED**: Proper error handling and graceful degradation
+
+#### **📊 Input/Output Enhancements**
+- **FLEXIBLE INPUT**: Supports mixed input types in single request
+- **DETAILED OUTPUT**: Comprehensive route information with:
+  - Real-time bus arrival integration
+  - Weather impact assessments
+  - Taxi cost estimations with peak hour surcharges
+  - Alternative route filtering (max 3 practical options)
+  - Transfer minimization analysis
+
+#### **🚫 Removed Broken Components**
+- **DELETED**: `src/tools/routing/enhanced.ts` (non-functional)
+- **DELETED**: `src/services/routing.ts` (incomplete implementation)
+- **CLEANED**: Server configuration to use only working tools
+
+### 🎯 **User Experience Improvements**
+- **RESOLVED**: Postal code routing now works perfectly
+- **ENHANCED**: Professional navigation instructions
+- **IMPROVED**: Smart alternative filtering (no more 22km walking routes)
+- **OPTIMIZED**: Response times with better API integration
+
+### 📈 **Performance & Reliability**
+- **API Integration**: Direct OneMap API calls with proper authentication
+- **Error Handling**: Comprehensive error recovery and user feedback
+- **Caching**: Optimized caching strategy for route calculations
+- **Validation**: Robust input validation for all location types
+
+---
+
 ## [0.2.2] - 2025-06-27
 
 ### 🛠️ Major Routing Improvements

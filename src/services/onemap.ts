@@ -315,46 +315,51 @@ export class OneMapService {
       // Get authentication token for routing
       const token = await this.ensureValidToken();
 
-      const now = new Date();
       const routeType = this.mapModeToRouteType(options.mode || 'PUBLIC_TRANSPORT');
       
       const params: any = {
         start: `${from.latitude},${from.longitude}`,
         end: `${to.latitude},${to.longitude}`,
         routeType,
-        numItineraries: options.numItineraries,
+        token,
       };
-
-      // Set time parameters in the correct format
-      if (options.departureTime) {
-        params.date = this.formatDateForOneMap(options.departureTime);
-        params.time = this.formatTimeForOneMap(options.departureTime);
-        params.arriveBy = 'false';
-      } else if (options.arrivalTime) {
-        params.date = this.formatDateForOneMap(options.arrivalTime);
-        params.time = this.formatTimeForOneMap(options.arrivalTime);
-        params.arriveBy = 'true';
-      } else {
-        params.date = this.formatDateForOneMap(now);
-        params.time = this.formatTimeForOneMap(now);
-        params.arriveBy = 'false';
-      }
 
       // Add mode-specific parameters
       if (options.mode === 'PUBLIC_TRANSPORT') {
         params.mode = 'TRANSIT';
-        params.maxWalkDistance = options.maxWalkDistance;
-        params.showIntermediateStops = 'true';
+        params.maxWalkDistance = options.maxWalkDistance || 1000;
+        
+        // Add time parameters for PT
+        const now = new Date();
+        if (options.departureTime) {
+          params.date = this.formatDateForOneMap(options.departureTime);
+          params.time = this.formatTimeForOneMap(options.departureTime);
+          params.arriveBy = 'false';
+        } else {
+          params.date = this.formatDateForOneMap(now);
+          params.time = this.formatTimeForOneMap(now);
+          params.arriveBy = 'false';
+        }
       }
 
-      // Make request with authorization header
-      const response = await this.client.get<OneMapRouteResponse>('/public/routingsvc/route', { 
+      // Use the correct endpoint based on the API documentation
+      const endpoint = '/privateapi/routingsvc/route';
+      
+      // Make request with token as parameter (not header)
+      const response = await this.client.get<OneMapRouteResponse>(endpoint, { 
         params,
-        headers: {
-          'Authorization': token
-        }
       });
       
+      // Check response status
+      if (response.data.status !== undefined && response.data.status !== 0) {
+        logger.warn('OneMap routing failed', { 
+          status: response.data.status, 
+          message: response.data.status_message,
+          params 
+        });
+        return null;
+      }
+
       // Check if we have a valid response
       if (!response.data.plan?.itineraries?.length && !response.data.route_instructions) {
         logger.warn('No route found', { from, to, params });

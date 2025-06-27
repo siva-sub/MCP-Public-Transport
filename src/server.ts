@@ -15,7 +15,6 @@ import { BusStopSearchTool } from './tools/bus/search.js';
 import { BusStopDetailsTool } from './tools/bus/details.js';
 import { TrainStatusTool } from './tools/train/status.js';
 import { JourneyPlanningTool } from './tools/routing/journey.js';
-import { EnhancedJourneyPlanningTool } from './tools/routing/enhanced.js';
 import { TaxiAvailabilityTool } from './tools/taxi/availability.js';
 import { LocationSearchTool } from './tools/location/search.js';
 import { WeatherConditionsTool } from './tools/weather/conditions.js';
@@ -25,7 +24,6 @@ import { PostalCodeService } from './services/postalCode.js';
 import { SingaporeTimeService } from './services/time.js';
 import { FuzzySearchService } from './services/fuzzySearch.js';
 import { WeatherService } from './services/weather.js';
-import { EnhancedRoutingService } from './services/routing.js';
 
 export class SingaporeTransportServer {
   private ltaService: LTAService;
@@ -55,12 +53,6 @@ export class SingaporeTransportServer {
     const timeService = new SingaporeTimeService();
     const fuzzySearchService = new FuzzySearchService();
     const weatherService = new WeatherService(this.cacheService);
-    const enhancedRoutingService = new EnhancedRoutingService(
-      this.oneMapService,
-      this.ltaService,
-      weatherService,
-      this.cacheService
-    );
 
     // Initialize all tools
     this.tools = [
@@ -70,7 +62,6 @@ export class SingaporeTransportServer {
       new BusStopDetailsTool(this.ltaService, this.oneMapService),
       new TrainStatusTool(this.ltaService),
       new JourneyPlanningTool(this.oneMapService, this.ltaService),
-      new EnhancedJourneyPlanningTool(enhancedRoutingService),
       new TaxiAvailabilityTool(this.ltaService, this.oneMapService),
       new LocationSearchTool(this.oneMapService, postalCodeService, timeService, fuzzySearchService),
       new WeatherConditionsTool(weatherService),

@@ -2,22 +2,49 @@ import { z } from 'zod';
 import { BaseTool, ToolDefinition } from '../base.js';
 import { OneMapService } from '../../services/onemap.js';
 import { LTAService } from '../../services/lta.js';
+import { WeatherService } from '../../services/weather.js';
 import { validateInput } from '../../utils/validation.js';
 import { logger } from '../../utils/logger.js';
 import { JourneyPlan, Location } from '../../types/transport.js';
 
+// Enhanced input schema supporting multiple input types
 const JourneyPlanningInputSchema = z.object({
-  fromLocation: z.string().min(1, 'From location is required'),
-  toLocation: z.string().min(1, 'To location is required'),
+  fromLocation: z.union([
+    z.string().min(1),
+    z.object({
+      postalCode: z.string().regex(/^\d{6}$/, 'Postal code must be 6 digits'),
+    }),
+    z.object({
+      latitude: z.number().min(1.0).max(1.5),
+      longitude: z.number().min(103.0).max(104.5),
+      name: z.string().optional(),
+    }),
+  ]),
+  toLocation: z.union([
+    z.string().min(1),
+    z.object({
+      postalCode: z.string().regex(/^\d{6}$/, 'Postal code must be 6 digits'),
+    }),
+    z.object({
+      latitude: z.number().min(1.0).max(1.5),
+      longitude: z.number().min(103.0).max(104.5),
+      name: z.string().optional(),
+    }),
+  ]),
   departureTime: z.string().optional(),
   arrivalTime: z.string().optional(),
-  mode: z.enum(['PUBLIC_TRANSPORT', 'WALK', 'DRIVE']).default('PUBLIC_TRANSPORT'),
+  mode: z.enum(['PUBLIC_TRANSPORT', 'WALK', 'DRIVE', 'CYCLE', 'AUTO']).default('AUTO'),
   preferences: z.object({
-    maxWalkDistance: z.number().min(100).max(2000).optional(),
-    avoidCrowds: z.boolean().optional(),
-    fastest: z.boolean().optional(),
-    cheapest: z.boolean().optional(),
-  }).optional(),
+    maxWalkDistance: z.number().min(100).max(2000).default(1000),
+    avoidCrowds: z.boolean().default(false),
+    fastest: z.boolean().default(true),
+    cheapest: z.boolean().default(false),
+    minimizeTransfers: z.boolean().default(true),
+    accessibilityRequired: z.boolean().default(false),
+    weatherAware: z.boolean().default(true),
+    allowDriving: z.boolean().default(true),
+  }).default({}),
+  maxAlternatives: z.number().min(1).max(5).default(3),
 });
 
 export class JourneyPlanningTool extends BaseTool {
@@ -35,12 +62,92 @@ export class JourneyPlanningTool extends BaseTool {
         description: 'Plan a comprehensive journey using multiple transport modes with real-time data',
         inputSchema: this.createSchema({
           fromLocation: {
-            type: 'string',
-            description: 'Starting location (address or landmark)',
+            oneOf: [
+              {
+                type: 'string',
+                description: 'Starting location as address or landmark (e.g., "Orchard MRT", "Marina Bay Sands")',
+              },
+              {
+                type: 'object',
+                properties: {
+                  postalCode: {
+                    type: 'string',
+                    pattern: '^\\d{6}$',
+                    description: 'Singapore postal code (6 digits)',
+                  },
+                },
+                required: ['postalCode'],
+                description: 'Starting location as postal code',
+              },
+              {
+                type: 'object',
+                properties: {
+                  latitude: {
+                    type: 'number',
+                    minimum: 1.0,
+                    maximum: 1.5,
+                    description: 'Latitude coordinate',
+                  },
+                  longitude: {
+                    type: 'number',
+                    minimum: 103.0,
+                    maximum: 104.5,
+                    description: 'Longitude coordinate',
+                  },
+                  name: {
+                    type: 'string',
+                    description: 'Optional location name',
+                  },
+                },
+                required: ['latitude', 'longitude'],
+                description: 'Starting location as coordinates',
+              },
+            ],
+            description: 'Starting location - provide as address, postal code, or coordinates',
           },
           toLocation: {
-            type: 'string',
-            description: 'Destination location (address or landmark)',
+            oneOf: [
+              {
+                type: 'string',
+                description: 'Destination location as address or landmark (e.g., "Changi Airport", "NUS")',
+              },
+              {
+                type: 'object',
+                properties: {
+                  postalCode: {
+                    type: 'string',
+                    pattern: '^\\d{6}$',
+                    description: 'Singapore postal code (6 digits)',
+                  },
+                },
+                required: ['postalCode'],
+                description: 'Destination location as postal code',
+              },
+              {
+                type: 'object',
+                properties: {
+                  latitude: {
+                    type: 'number',
+                    minimum: 1.0,
+                    maximum: 1.5,
+                    description: 'Latitude coordinate',
+                  },
+                  longitude: {
+                    type: 'number',
+                    minimum: 103.0,
+                    maximum: 104.5,
+                    description: 'Longitude coordinate',
+                  },
+                  name: {
+                    type: 'string',
+                    description: 'Optional location name',
+                  },
+                },
+                required: ['latitude', 'longitude'],
+                description: 'Destination location as coordinates',
+              },
+            ],
+            description: 'Destination location - provide as address, postal code, or coordinates',
           },
           departureTime: {
             type: 'string',
@@ -52,9 +159,9 @@ export class JourneyPlanningTool extends BaseTool {
           },
           mode: {
             type: 'string',
-            enum: ['PUBLIC_TRANSPORT', 'WALK', 'DRIVE'],
-            default: 'PUBLIC_TRANSPORT',
-            description: 'Primary transport mode',
+            enum: ['PUBLIC_TRANSPORT', 'WALK', 'DRIVE', 'CYCLE', 'AUTO'],
+            default: 'AUTO',
+            description: 'Transport mode: AUTO (smart selection), PUBLIC_TRANSPORT (bus/train), WALK, DRIVE (taxi/car), CYCLE',
           },
           preferences: {
             type: 'object',
@@ -63,22 +170,53 @@ export class JourneyPlanningTool extends BaseTool {
                 type: 'number',
                 minimum: 100,
                 maximum: 2000,
+                default: 1000,
                 description: 'Maximum walking distance in meters',
               },
               avoidCrowds: {
                 type: 'boolean',
+                default: false,
                 description: 'Avoid crowded routes',
               },
               fastest: {
                 type: 'boolean',
+                default: true,
                 description: 'Prioritize fastest route',
               },
               cheapest: {
                 type: 'boolean',
+                default: false,
                 description: 'Prioritize cheapest route',
               },
+              minimizeTransfers: {
+                type: 'boolean',
+                default: true,
+                description: 'Minimize number of transfers',
+              },
+              accessibilityRequired: {
+                type: 'boolean',
+                default: false,
+                description: 'Ensure wheelchair accessibility',
+              },
+              weatherAware: {
+                type: 'boolean',
+                default: true,
+                description: 'Adjust walking times based on weather',
+              },
+              allowDriving: {
+                type: 'boolean',
+                default: true,
+                description: 'Include driving/taxi options',
+              },
             },
-            description: 'Journey preferences',
+            description: 'Journey planning preferences',
+          },
+          maxAlternatives: {
+            type: 'number',
+            minimum: 1,
+            maximum: 5,
+            default: 3,
+            description: 'Maximum number of alternative routes to return',
           },
         }, ['fromLocation', 'toLocation']),
       },
@@ -99,22 +237,22 @@ export class JourneyPlanningTool extends BaseTool {
         mode: input.mode,
       });
 
-      // Geocode locations
+      // Resolve locations (handle different input types)
       const [fromLocation, toLocation] = await Promise.all([
-        this.oneMapService.geocode(input.fromLocation),
-        this.oneMapService.geocode(input.toLocation),
+        this.resolveLocation(input.fromLocation),
+        this.resolveLocation(input.toLocation),
       ]);
 
       if (!fromLocation) {
         return {
-          error: `Could not find location: ${input.fromLocation}`,
+          error: `Could not find location: ${JSON.stringify(input.fromLocation)}`,
           timestamp: new Date().toISOString(),
         };
       }
 
       if (!toLocation) {
         return {
-          error: `Could not find location: ${input.toLocation}`,
+          error: `Could not find location: ${JSON.stringify(input.toLocation)}`,
           timestamp: new Date().toISOString(),
         };
       }
@@ -123,12 +261,30 @@ export class JourneyPlanningTool extends BaseTool {
       const departureTime = input.departureTime ? new Date(input.departureTime) : undefined;
       const arrivalTime = input.arrivalTime ? new Date(input.arrivalTime) : undefined;
 
+      // Determine the best mode if AUTO is selected
+      const resolvedMode: 'PUBLIC_TRANSPORT' | 'WALK' | 'DRIVE' | 'CYCLE' = 
+        input.mode === 'AUTO' ? this.selectOptimalMode(fromLocation, toLocation) : 
+        input.mode || 'PUBLIC_TRANSPORT';
+
+      // Ensure preferences have defaults
+      const preferences = {
+        maxWalkDistance: 1000,
+        avoidCrowds: false,
+        fastest: true,
+        cheapest: false,
+        minimizeTransfers: true,
+        accessibilityRequired: false,
+        weatherAware: true,
+        allowDriving: true,
+        ...input.preferences,
+      };
+
       // Plan primary route
       const primaryRoute = await this.oneMapService.planRoute(fromLocation, toLocation, {
-        mode: input.mode,
+        mode: this.mapModeToOneMapMode(resolvedMode),
         departureTime,
         arrivalTime,
-        maxWalkDistance: input.preferences?.maxWalkDistance,
+        maxWalkDistance: preferences.maxWalkDistance,
       });
 
       if (!primaryRoute) {
@@ -147,8 +303,8 @@ export class JourneyPlanningTool extends BaseTool {
       const alternatives = await this.getAlternativeRoutes(
         fromLocation,
         toLocation,
-        input.mode || 'PUBLIC_TRANSPORT',
-        input.preferences
+        resolvedMode,
+        preferences
       );
 
       // Get current transport alerts
@@ -165,6 +321,55 @@ export class JourneyPlanningTool extends BaseTool {
       logger.error(`Journey planning tool failed: ${toolName}`, error);
       return this.formatError(error as Error, toolName);
     }
+  }
+
+  private async resolveLocation(
+    locationInput: string | { postalCode: string } | { latitude: number; longitude: number; name?: string }
+  ): Promise<Location | null> {
+    try {
+      // Handle coordinate input
+      if (typeof locationInput === 'object' && 'latitude' in locationInput) {
+        return {
+          latitude: locationInput.latitude,
+          longitude: locationInput.longitude,
+          name: locationInput.name,
+          address: locationInput.name,
+        };
+      }
+
+      // Handle postal code input
+      if (typeof locationInput === 'object' && 'postalCode' in locationInput) {
+        return await this.oneMapService.geocode(locationInput.postalCode);
+      }
+
+      // Handle string input (address/name)
+      if (typeof locationInput === 'string') {
+        return await this.oneMapService.geocode(locationInput);
+      }
+
+      return null;
+    } catch (error) {
+      logger.error('Location resolution failed', error);
+      return null;
+    }
+  }
+
+  private selectOptimalMode(from: Location, to: Location): 'PUBLIC_TRANSPORT' | 'WALK' | 'DRIVE' {
+    const distance = this.calculateDistance(from.latitude, from.longitude, to.latitude, to.longitude);
+    
+    // Walking for short distances (under 1km)
+    if (distance < 1000) return 'WALK';
+    
+    // Driving for long distances (over 15km)
+    if (distance > 15000) return 'DRIVE';
+    
+    // Public transport for medium distances
+    return 'PUBLIC_TRANSPORT';
+  }
+
+  private mapModeToOneMapMode(mode: 'PUBLIC_TRANSPORT' | 'WALK' | 'DRIVE' | 'CYCLE'): 'PUBLIC_TRANSPORT' | 'WALK' | 'DRIVE' {
+    if (mode === 'CYCLE') return 'WALK'; // OneMap doesn't support cycle, use walk as fallback
+    return mode;
   }
 
   private async enhanceWithRealTimeData(route: JourneyPlan): Promise<JourneyPlan> {
@@ -202,7 +407,16 @@ export class JourneyPlanningTool extends BaseTool {
     from: Location,
     to: Location,
     primaryMode: string,
-    preferences: z.infer<typeof JourneyPlanningInputSchema>['preferences']
+    preferences: {
+      maxWalkDistance: number;
+      avoidCrowds: boolean;
+      fastest: boolean;
+      cheapest: boolean;
+      minimizeTransfers: boolean;
+      accessibilityRequired: boolean;
+      weatherAware: boolean;
+      allowDriving: boolean;
+    }
   ): Promise<JourneyPlan[]> {
     const alternatives: JourneyPlan[] = [];
 
